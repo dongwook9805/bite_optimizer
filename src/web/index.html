@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bite Optimizer Visualization</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #1a1a1a; font-family: 'Inter', sans-serif; color: white; }
-        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: 'Inter', sans-serif;
+            color: white;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
         #ui-layer {
             position: absolute;
             top: 20px;
@@ -15,14 +28,35 @@
             background: rgba(30, 30, 30, 0.9);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        h1 { font-size: 18px; margin: 0 0 15px 0; color: #4facfe; }
-        .metric-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
-        .metric-val { font-weight: bold; color: #00f260; }
-        .controls { margin-top: 20px; display: grid; gap: 10px; }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            color: #4facfe;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .metric-val {
+            font-weight: bold;
+            color: #00f260;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: grid;
+            gap: 10px;
+        }
+
         button {
             background: linear-gradient(135deg, #4facfe 0%, #00f260 100%);
             border: none;
@@ -33,15 +67,29 @@
             cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
         }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(1px); }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
         button.secondary {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
         }
+
         .status-dot {
-            width: 8px; height: 8px; background: #00f260; border-radius: 50%; display: inline-block; margin-right: 5px;
+            width: 8px;
+            height: 8px;
+            background: #00f260;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
         }
     </style>
     <!-- Import Map for Three.js -->
@@ -54,28 +102,42 @@
         }
     </script>
 </head>
+
 <body>
     <div id="canvas-container"></div>
     <div id="ui-layer">
         <h1><span class="status-dot"></span>Bite Optimizer</h1>
-        
+
         <div id="metrics">
             <div class="metric-row"><span>Reward:</span> <span id="val-reward" class="metric-val">0.00</span></div>
-            <div class="metric-row"><span>Contact Score:</span> <span id="val-contact" class="metric-val">0.00</span></div>
-            <div class="metric-row"><span>Min Dist:</span> <span id="val-mindist" class="metric-val">0.00</span></div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 5px 0;"></div>
+            <div class="metric-row"><span>Overjet (mm):</span> <span id="val-overjet">0.00</span></div>
+            <div class="metric-row"><span>Overbite (mm):</span> <span id="val-overbite">0.00</span></div>
+            <div class="metric-row"><span>Midline Dev:</span> <span id="val-midline">0.00</span></div>
+            <div class="metric-row"><span>Ant. Contact:</span> <span id="val-ant-contact">0.00</span></div>
+            <div class="metric-row"><span>Post. Contact:</span> <span id="val-post-contact">0.00</span></div>
+            <div class="metric-row"><span>Openbite Frac:</span> <span id="val-openbite">0.00</span></div>
         </div>
 
         <div class="controls">
             <button onclick="window.stepRandom()">Random Action (Step)</button>
             <button onclick="window.runAuto()">Auto Play (Run 100 steps)</button>
+            <button onclick="window.runICP()"
+                style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);">Rough Align
+                (ICP)</button>
+            <button onclick="window.runRL()"
+                style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">Fine-tune (RL)</button>
             <button class="secondary" onclick="window.resetSim()">Reset Position</button>
         </div>
         <div style="font-size: 11px; margin-top:15px; color:#aaa; text-align:center;">
             Use Mouse to Rotate/Zoom
         </div>
-        <div id="log" style="font-size: 10px; margin-top:10px; color:#666; height: 50px; overflow-y:auto; font-family: monospace;"></div>
+        <div id="log"
+            style="font-size: 10px; margin-top:10px; color:#666; height: 50px; overflow-y:auto; font-family: monospace;">
+        </div>
     </div>
 
     <script type="module" src="./static/app.js"></script>
 </body>
+
 </html>

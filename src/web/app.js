@@ -80,12 +80,22 @@ async function syncState() {
             document.getElementById('val-reward').innerText = data.reward.toFixed(3);
         }
         if (data.metrics) {
-            const dists = data.metrics.distances;
-            const minD = dists ? Math.min(...dists) : 0;
-            document.getElementById('val-mindist').innerText = minD.toFixed(3);
+            const m = data.metrics;
 
-            // Simple Contact Count proxy
-            // We don't get contact score directly unless we compute it or server sends it
+            // Helper to safe update
+            const update = (id, val) => {
+                const el = document.getElementById(id);
+                if (el && val !== undefined) el.innerText = (typeof val === 'number') ? val.toFixed(2) : val;
+            };
+
+            update('val-overjet', m.overjet_mm);
+            update('val-overbite', m.overbite_mm);
+            update('val-midline', m.midline_dev_mm);
+            update('val-ant-contact', m.anterior_contact_ratio);
+            update('val-post-contact', m.posterior_contact_ratio);
+            update('val-openbite', m.anterior_openbite_fraction);
+
+            // Can add more if needed
         }
 
         // Update Transform
@@ -141,6 +151,12 @@ window.resetSim = async () => {
     await fetch('/api/reset', { method: 'POST' });
 };
 
+window.runICP = async () => {
+    log("Running ICP...");
+    await fetch('/api/icp', { method: 'POST' });
+    log("ICP Done.");
+};
+
 window.stepRandom = async () => {
     // Random tiny move
     const act = {
@@ -167,4 +183,38 @@ window.runAuto = async () => {
         await new Promise(r => setTimeout(r, 50));
     }
     log("Done.");
+};
+
+window.runRL = async () => {
+    log("Running RL Fine-tuning...");
+
+    const MAX_STEPS = 2000;
+    const CONVERGENCE_THRESHOLD = 0.0001; // Stop if reward improvement < this
+    let prevReward = -Infinity;
+
+    for (let i = 0; i < MAX_STEPS; i++) {
+        try {
+            const res = await fetch('/api/rl_step', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.error) {
+                log("Error: " + data.error);
+                break;
+            }
+
+            // Convergence Check REMOVED per user request
+            // const currentReward = data.reward;
+            // if (Math.abs(currentReward - prevReward) < CONVERGENCE_THRESHOLD) { ... }
+            // prevReward = currentReward;
+
+
+            // Wait slightly for animation effect
+            await new Promise(r => setTimeout(r, 50));
+
+        } catch (e) {
+            console.error(e);
+            break;
+        }
+    }
+    log("RL Done.");
 };

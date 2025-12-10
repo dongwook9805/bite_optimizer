@@ -5,3 +5,5 @@ scipy
 rtree
 shapely
 matplotlib
+stable-baselines3
+shimmy

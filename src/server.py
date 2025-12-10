@@ -11,7 +11,7 @@ import trimesh
 # Add src to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from simulator import BiteSimulator
-from utils import reward_function
+from utils import orthodontic_occlusion_reward
 
 app = FastAPI()
 
@@ -51,18 +51,50 @@ async def get_state():
     """
     matrix = simulator.transform_matrix.tolist()
     metrics = simulator.get_metrics()
-    reward = reward_function(metrics['distances'], metrics['points'])
+    
+    ortho_metrics = simulator.get_orthodontic_metrics()
+    reward = orthodontic_occlusion_reward(**ortho_metrics)
+    
+    # Merge basic metrics and ortho metrics for display
+    display_metrics = {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+    display_metrics.update(ortho_metrics)
     
     return {
         "matrix": matrix,
         "reward": reward,
-        "metrics": {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+        "metrics": display_metrics
     }
 
 @app.post("/api/reset")
 async def reset_sim():
     simulator.reset()
-    return {"status": "reset"}
+    
+    # Apply random perturbation to make it "misaligned"
+    # Rotate up to +/- 10 degrees, Translate up to +/- 5mm
+    rx, ry, rz = np.random.uniform(-10, 10, 3)
+    tx, ty, tz = np.random.uniform(-5, 5, 3)
+    
+    simulator.apply_transform(np.array([rx, ry, rz]), np.array([tx, ty, tz]))
+    print(f"Reset to randomized state: R=[{rx:.2f}, {ry:.2f}, {rz:.2f}], T=[{tx:.2f}, {ty:.2f}, {tz:.2f}]")
+    
+    return {"status": "reset_randomized"}
+
+@app.post("/api/icp")
+async def run_icp():
+    simulator.rough_align_icp()
+    
+    metrics = simulator.get_metrics()
+    ortho_metrics = simulator.get_orthodontic_metrics()
+    reward = orthodontic_occlusion_reward(**ortho_metrics)
+    
+    display_metrics = {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+    display_metrics.update(ortho_metrics)
+    
+    return {
+        "status": "icp_done",
+        "reward": reward,
+        "metrics": display_metrics
+    }
 
 @app.post("/api/step")
 async def step_sim(action: Action):
@@ -75,11 +107,93 @@ async def step_sim(action: Action):
     simulator.apply_transform(delta_r, delta_t)
     
     metrics = simulator.get_metrics()
-    reward = reward_function(metrics['distances'], metrics['points'])
+    ortho_metrics = simulator.get_orthodontic_metrics()
+    reward = orthodontic_occlusion_reward(**ortho_metrics)
+    
+    display_metrics = {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+    display_metrics.update(ortho_metrics)
     
     return {
         "reward": reward,
-        "metrics": {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+        "metrics": display_metrics
+    }
+
+    return {
+        "reward": reward,
+        "metrics": display_metrics
+    }
+
+# RL Model Loading
+from stable_baselines3 import PPO
+model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'models', 'ppo_bite.zip')
+rl_model = None
+
+if os.path.exists(model_path):
+    try:
+        rl_model = PPO.load(model_path)
+        print(f"Loaded RL model from {model_path}")
+    except Exception as e:
+        print(f"Failed to load RL model: {e}")
+else:
+    print(f"RL model not found at {model_path}")
+
+@app.post("/api/rl_step")
+async def rl_step_sim():
+    if rl_model is None:
+        return {"error": "RL model not loaded"}
+        
+    # Construct Observation (Must match BiteEnv._get_obs)
+    # [Rot(3), Trans(3), Metrics(12)] = 18 dims
+    
+    trans = simulator.current_translation
+    rot = np.zeros(3) # Dummy rotation as in Env
+    
+    ortho_metrics = simulator.get_orthodontic_metrics()
+    
+    # Order matches bite_env.py
+    m_vals = [
+        ortho_metrics["overjet_mm"],
+        ortho_metrics["overbite_mm"],
+        ortho_metrics["midline_dev_mm"],
+        ortho_metrics["anterior_contact_ratio"],
+        ortho_metrics["posterior_contact_ratio"],
+        ortho_metrics["left_contact_force"],
+        ortho_metrics["right_contact_force"],
+        ortho_metrics["working_side_interference"],
+        ortho_metrics["nonworking_side_interference"],
+        ortho_metrics["anterior_openbite_fraction"],
+        ortho_metrics["posterior_crossbite_count"],
+        ortho_metrics["scissors_bite_count"]
+    ]
+    
+    obs = np.concatenate([rot, trans, m_vals]).astype(np.float32)
+    
+    # Predict
+    action, _ = rl_model.predict(obs, deterministic=True)
+    
+    # Scale Action (Must match BiteEnv parameters)
+    # Env max_rot=0.5, max_trans=0.1
+    MAX_ROT = 0.5
+    MAX_TRANS = 0.1
+    
+    delta_r = action[:3] * MAX_ROT
+    delta_t = action[3:] * MAX_TRANS
+    
+    # Apply
+    simulator.apply_transform(delta_r, delta_t)
+    
+    # Return new state
+    metrics = simulator.get_metrics()
+    ortho_metrics = simulator.get_orthodontic_metrics()
+    reward = orthodontic_occlusion_reward(**ortho_metrics)
+    
+    display_metrics = {k: v.tolist() if isinstance(v, np.ndarray) else v for k,v in metrics.items() if k != 'points'}
+    display_metrics.update(ortho_metrics)
+    
+    return {
+        "status": "rl_step_done",
+        "reward": reward,
+        "metrics": display_metrics
     }
 
 if __name__ == "__main__":
