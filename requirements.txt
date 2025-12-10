@@ -1,0 +1,7 @@
+numpy
+trimesh
+gymnasium
+scipy
+rtree
+shapely
+matplotlib
