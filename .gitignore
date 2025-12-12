@@ -1,0 +1,4 @@
+# Large model checkpoints (>100MB)
+*.ckpt
+__pycache__/
+*.pyc

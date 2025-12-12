@@ -1253,4 +1253,5 @@ CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qinputmethod.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qlocale.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qguiapplication_platform.h \
-  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QWheelEvent
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QWheelEvent \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream

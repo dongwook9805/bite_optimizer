@@ -748,6 +748,7 @@
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/stdarg.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/GLWidget.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Mesh.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Segmentation.h \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/Cholesky \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/Core \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/Geometry \
@@ -940,6 +941,8 @@
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/src/plugins/MatrixCwiseUnaryOps.inc \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/src/plugins/ReshapedMethods.inc \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/QObject \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/QProcess \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/QString \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/q17memory.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/q20functional.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/q20iterator.h \
@@ -1012,6 +1015,7 @@
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qoverload.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qpair.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qpoint.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qprocess.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qprocessordetection.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qrect.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtCore.framework/Versions/A/Headers/qrefcount.h \
@@ -1127,12 +1131,26 @@
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtOpenGLWidgets.framework/Versions/A/Headers/qopenglwidget.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtOpenGLWidgets.framework/Versions/A/Headers/qtopenglwidgetsexports.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtOpenGLWidgets.framework/Versions/A/Headers/qtopenglwidgetsglobal.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QCheckBox \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QDockWidget \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QGroupBox \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QLabel \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QMainWindow \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QProgressBar \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QVBoxLayout \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/QWidget \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qabstractbutton.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qboxlayout.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qcheckbox.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qdockwidget.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qframe.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qgridlayout.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qgroupbox.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qlabel.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qlayout.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qlayoutitem.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qmainwindow.h \
+  /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qprogressbar.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qsizepolicy.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qtabwidget.h \
   /opt/homebrew/Cellar/qtbase/6.9.3_1/lib/QtWidgets.framework/Versions/A/Headers/qtwidgets-config.h \

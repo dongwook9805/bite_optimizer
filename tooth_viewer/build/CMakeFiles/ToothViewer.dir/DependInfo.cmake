@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/MainWindow.cpp" "CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Mesh.cpp" "CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/MeshLoader.cpp" "CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.o.d"
+  "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Segmentation.cpp" "CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/main.cpp" "CMakeFiles/ToothViewer.dir/src/main.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/main.cpp.o.d"
   )
 

@@ -971,6 +971,20 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qiodevice.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextdocument.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qurl.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QProgressBar \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qprogressbar.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QDockWidget \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qdockwidget.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QCheckBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qcheckbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractbutton.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QGroupBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgroupbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QVBoxLayout \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qboxlayout.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayout.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayoutitem.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgridlayout.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/GLWidget.h \
   /opt/homebrew/opt/qt/lib/QtOpenGLWidgets.framework/Headers/QOpenGLWidget \
   /opt/homebrew/opt/qt/lib/QtOpenGLWidgets.framework/Headers/qopenglwidget.h \
@@ -1238,6 +1252,10 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/Umeyama.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/Geometry_SIMD.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/../InternalHeaderCheck.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Segmentation.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QString \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QProcess \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qprocess.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/MeshLoader.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QMenuBar \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qmenubar.h \
@@ -1279,4 +1297,13 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QMessageBox \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qmessagebox.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qdialogbuttonbox.h \
-  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QAction
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QAction \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QTemporaryFile \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtemporaryfile.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QDir \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QHBoxLayout \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QPushButton \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qpushbutton.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QScrollArea \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qscrollarea.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractscrollarea.h

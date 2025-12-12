@@ -23,6 +23,7 @@ set(SOURCES
     src/GLWidget.cpp
     src/Mesh.cpp
     src/MeshLoader.cpp
+    src/Segmentation.cpp
 )
 
 set(HEADERS
@@ -30,6 +31,7 @@ set(HEADERS
     src/GLWidget.h
     src/Mesh.h
     src/MeshLoader.h
+    src/Segmentation.h
 )
 
 # Shader files as resources

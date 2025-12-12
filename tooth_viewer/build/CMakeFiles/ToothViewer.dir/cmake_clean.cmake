@@ -12,6 +12,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o.d"
   "CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.o"
   "CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.o.d"
+  "CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.o"
+  "CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.o.d"
   "CMakeFiles/ToothViewer.dir/src/main.cpp.o"
   "CMakeFiles/ToothViewer.dir/src/main.cpp.o.d"
   "ToothViewer.app/Contents/MacOS/ToothViewer"

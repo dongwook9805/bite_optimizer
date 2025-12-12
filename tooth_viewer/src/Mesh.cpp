@@ -16,6 +16,7 @@ void Mesh::clear()
 {
     m_vertices.clear();
     m_faces.clear();
+    m_labels.clear();
     m_center = Eigen::Vector3f::Zero();
     m_boundingRadius = 1.0f;
 }
@@ -99,11 +100,31 @@ void Mesh::centerAndNormalize()
 
     if (m_boundingRadius < 1e-6f) return;
 
+    // Store original transformation parameters
+    m_originalCenter = m_center;
+    m_originalScale = m_boundingRadius;
+
     float scale = 1.0f / m_boundingRadius;
     for (auto& v : m_vertices) {
         v.position = (v.position - m_center) * scale;
     }
 
+    m_center = Eigen::Vector3f::Zero();
+    m_boundingRadius = 1.0f;
+}
+
+void Mesh::centerAndNormalizeWith(const Eigen::Vector3f& center, float scale)
+{
+    // Apply the same transformation as another mesh
+    if (scale < 1e-6f) return;
+
+    float invScale = 1.0f / scale;
+    for (auto& v : m_vertices) {
+        v.position = (v.position - center) * invScale;
+    }
+
+    m_originalCenter = center;
+    m_originalScale = scale;
     m_center = Eigen::Vector3f::Zero();
     m_boundingRadius = 1.0f;
 }
@@ -173,4 +194,17 @@ void Mesh::setFaceColors(const std::vector<Eigen::Vector3f>& colors)
             m_vertices[i].color = vertexColorSum[i] / static_cast<float>(vertexColorCount[i]);
         }
     }
+}
+
+void Mesh::setLabel(size_t vertexIndex, int label)
+{
+    if (m_labels.size() <= vertexIndex) {
+        m_labels.resize(vertexIndex + 1, 0);
+    }
+    m_labels[vertexIndex] = label;
+}
+
+void Mesh::reserveLabels(size_t count)
+{
+    m_labels.reserve(count);
 }

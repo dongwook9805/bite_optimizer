@@ -1244,7 +1244,26 @@ CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qiodevice.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextdocument.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qurl.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QProgressBar \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qprogressbar.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QDockWidget \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qdockwidget.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QCheckBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qcheckbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractbutton.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QGroupBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgroupbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QVBoxLayout \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qboxlayout.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayout.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayoutitem.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgridlayout.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/UVLADIE3JM/../../../src/Segmentation.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QString \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QProcess \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qprocess.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextcursor.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextformat.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpen.h \
-  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextoption.h
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextoption.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/UVLADIE3JM/moc_Segmentation.cpp

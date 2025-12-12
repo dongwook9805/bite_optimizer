@@ -118,6 +118,10 @@ std::unique_ptr<Mesh> MeshLoader::loadPLY(const std::string& filepath)
     int faceCount = 0;
     bool isBinary = false;
     bool hasColors = false;
+    bool hasLabels = false;
+
+    // Track property order for proper parsing
+    std::vector<std::string> vertexProperties;
 
     // Parse header
     while (std::getline(file, line)) {
@@ -141,6 +145,8 @@ std::unique_ptr<Mesh> MeshLoader::loadPLY(const std::string& filepath)
             std::string propType, propName;
             iss >> propType >> propName;
             if (propName == "red" || propName == "r") hasColors = true;
+            if (propName == "label") hasLabels = true;
+            vertexProperties.push_back(propName);
         }
         else if (token == "end_header") {
             break;
@@ -148,6 +154,7 @@ std::unique_ptr<Mesh> MeshLoader::loadPLY(const std::string& filepath)
     }
 
     // Read vertices (ASCII only for now)
+    mesh->reserveLabels(vertexCount);
     for (int i = 0; i < vertexCount; ++i) {
         std::getline(file, line);
         std::istringstream iss(line);
@@ -156,14 +163,22 @@ std::unique_ptr<Mesh> MeshLoader::loadPLY(const std::string& filepath)
         iss >> x >> y >> z;
 
         Eigen::Vector3f color(0.8f, 0.8f, 0.8f);
+        int label = 0;
+
         if (hasColors) {
-            // Skip nx, ny, nz if present, then read colors
             float r, g, b;
             iss >> r >> g >> b;
             color = Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f);
         }
 
+        if (hasLabels) {
+            iss >> label;
+        }
+
         mesh->addVertex(Eigen::Vector3f(x, y, z), Eigen::Vector3f::Zero(), color);
+        if (hasLabels) {
+            mesh->setLabel(i, label);
+        }
     }
 
     // Read faces
@@ -189,7 +204,11 @@ std::unique_ptr<Mesh> MeshLoader::loadPLY(const std::string& filepath)
     mesh->computeBoundingBox();
 
     std::cout << "Loaded PLY: " << mesh->vertexCount() << " vertices, "
-              << mesh->faceCount() << " faces" << std::endl;
+              << mesh->faceCount() << " faces";
+    if (hasLabels) {
+        std::cout << ", with labels";
+    }
+    std::cout << std::endl;
 
     return mesh;
 }
