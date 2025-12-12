@@ -1,0 +1,5 @@
+/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles/ToothViewer.dir
+/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles/edit_cache.dir
+/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles/rebuild_cache.dir
+/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles/ToothViewer_autogen_timestamp_deps.dir
+/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles/ToothViewer_autogen.dir
