@@ -56,11 +56,6 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         "outputPath",
         "onSegmentationProgress",
         "message",
-        "runInstanceSegmentation",
-        "runLandmarkDetection",
-        "onLandmarksFinished",
-        "jsonPath",
-        "plyPath",
         "onMeshVisibilityChanged",
         "visible",
         "onPointCloudVisibilityChanged",
@@ -93,25 +88,17 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SlotData<void(const QString &)>(15, 2, QMC::AccessPrivate, QMetaType::Void, {{
             { QMetaType::QString, 16 },
         }}),
-        // Slot 'runInstanceSegmentation'
-        QtMocHelpers::SlotData<void()>(17, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'runLandmarkDetection'
-        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onLandmarksFinished'
-        QtMocHelpers::SlotData<void(bool, const QString &, const QString &)>(19, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Bool, 13 }, { QMetaType::QString, 20 }, { QMetaType::QString, 21 },
-        }}),
         // Slot 'onMeshVisibilityChanged'
-        QtMocHelpers::SlotData<void(bool)>(22, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Bool, 23 },
+        QtMocHelpers::SlotData<void(bool)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Bool, 18 },
         }}),
         // Slot 'onPointCloudVisibilityChanged'
-        QtMocHelpers::SlotData<void(bool)>(24, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Bool, 23 },
+        QtMocHelpers::SlotData<void(bool)>(19, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Bool, 18 },
         }}),
         // Slot 'onLabelVisibilityChanged'
-        QtMocHelpers::SlotData<void(int, bool)>(25, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 26 }, { QMetaType::Bool, 23 },
+        QtMocHelpers::SlotData<void(int, bool)>(20, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 21 }, { QMetaType::Bool, 18 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -144,12 +131,9 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 5: _t->runAISegmentation(); break;
         case 6: _t->onSegmentationFinished((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
         case 7: _t->onSegmentationProgress((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 8: _t->runInstanceSegmentation(); break;
-        case 9: _t->runLandmarkDetection(); break;
-        case 10: _t->onLandmarksFinished((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3]))); break;
-        case 11: _t->onMeshVisibilityChanged((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
-        case 12: _t->onPointCloudVisibilityChanged((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
-        case 13: _t->onLabelVisibilityChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<bool>>(_a[2]))); break;
+        case 8: _t->onMeshVisibilityChanged((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
+        case 9: _t->onPointCloudVisibilityChanged((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1]))); break;
+        case 10: _t->onLabelVisibilityChanged((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<bool>>(_a[2]))); break;
         default: ;
         }
     }
@@ -174,14 +158,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 14)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 14;
+        _id -= 11;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 14)
+        if (_id < 11)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 14;
+        _id -= 11;
     }
     return _id;
 }

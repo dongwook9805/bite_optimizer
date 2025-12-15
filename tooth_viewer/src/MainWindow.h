@@ -32,11 +32,6 @@ private slots:
     void onSegmentationFinished(bool success, const QString& outputPath);
     void onSegmentationProgress(const QString& message);
 
-    // 3DTeethLand
-    void runInstanceSegmentation();
-    void runLandmarkDetection();
-    void onLandmarksFinished(bool success, const QString& jsonPath, const QString& plyPath);
-
     // Layer visibility
     void onMeshVisibilityChanged(bool visible);
     void onPointCloudVisibilityChanged(bool visible);
@@ -64,13 +59,11 @@ private:
     QDockWidget* m_sidePanel;
     QGroupBox* m_meshGroup;
     QGroupBox* m_segmentationGroup;
-    QGroupBox* m_landmarksGroup;
     QLabel* m_emptyLabel;
     QWidget* m_labelsWidget;
     QVBoxLayout* m_labelsLayout;
     QCheckBox* m_meshVisibleCheck;
     QCheckBox* m_pointCloudVisibleCheck;
-    QCheckBox* m_landmarksVisibleCheck;
     std::vector<QCheckBox*> m_labelCheckboxes;  // 0-16 for gingiva + 16 teeth
 };
 

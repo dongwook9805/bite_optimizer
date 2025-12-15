@@ -25,8 +25,6 @@ MainWindow::MainWindow(QWidget* parent)
             this, &MainWindow::onSegmentationFinished);
     connect(m_segmentation, &Segmentation::segmentationProgress,
             this, &MainWindow::onSegmentationProgress);
-    connect(m_segmentation, &Segmentation::landmarksFinished,
-            this, &MainWindow::onLandmarksFinished);
 
     setupUI();
     setupMenuBar();
@@ -113,20 +111,6 @@ void MainWindow::setupSidePanel()
     mainLayout->addWidget(m_segmentationGroup, 1);
     m_segmentationGroup->hide();  // Hidden until segmentation is done
 
-    // Landmarks group (initially hidden)
-    m_landmarksGroup = new QGroupBox(tr("Landmarks"));
-    QVBoxLayout* lmLayout = new QVBoxLayout(m_landmarksGroup);
-
-    m_landmarksVisibleCheck = new QCheckBox(tr("Show Landmarks"));
-    m_landmarksVisibleCheck->setChecked(true);
-    connect(m_landmarksVisibleCheck, &QCheckBox::toggled, this, [this](bool visible) {
-        m_glWidget->setLandmarksVisible(visible);
-    });
-    lmLayout->addWidget(m_landmarksVisibleCheck);
-
-    mainLayout->addWidget(m_landmarksGroup);
-    m_landmarksGroup->hide();  // Hidden until landmarks are detected
-
     // Empty state label
     m_emptyLabel = new QLabel(tr("Load a mesh file to begin"));
     m_emptyLabel->setAlignment(Qt::AlignCenter);
@@ -202,22 +186,9 @@ void MainWindow::setupMenuBar()
     // AI menu
     QMenu* aiMenu = menuBar()->addMenu(tr("&AI"));
 
-    // CrossTooth submenu
-    QMenu* crossToothMenu = aiMenu->addMenu(tr("CrossTooth"));
-    QAction* segmentAction = crossToothMenu->addAction(tr("&Tooth Segmentation"));
+    QAction* segmentAction = aiMenu->addAction(tr("&Tooth Segmentation"));
     segmentAction->setShortcut(Qt::CTRL | Qt::Key_S);
     connect(segmentAction, &QAction::triggered, this, &MainWindow::runAISegmentation);
-
-    // 3DTeethLand submenu
-    QMenu* teethLandMenu = aiMenu->addMenu(tr("3DTeethLand"));
-
-    QAction* instSegAction = teethLandMenu->addAction(tr("&Instance Segmentation"));
-    instSegAction->setShortcut(Qt::CTRL | Qt::Key_I);
-    connect(instSegAction, &QAction::triggered, this, &MainWindow::runInstanceSegmentation);
-
-    QAction* landmarkAction = teethLandMenu->addAction(tr("&Landmark Detection"));
-    landmarkAction->setShortcut(Qt::CTRL | Qt::Key_L);
-    connect(landmarkAction, &QAction::triggered, this, &MainWindow::runLandmarkDetection);
 
     aiMenu->addSeparator();
 
@@ -277,17 +248,9 @@ void MainWindow::setupToolBar()
 
     toolbar->addSeparator();
 
-    QAction* segmentAction = toolbar->addAction(tr("CrossTooth"));
+    QAction* segmentAction = toolbar->addAction(tr("Segmentation"));
     segmentAction->setToolTip(tr("Run CrossTooth tooth segmentation"));
     connect(segmentAction, &QAction::triggered, this, &MainWindow::runAISegmentation);
-
-    QAction* instSegAction = toolbar->addAction(tr("Instance Seg"));
-    instSegAction->setToolTip(tr("Run 3DTeethLand instance segmentation"));
-    connect(instSegAction, &QAction::triggered, this, &MainWindow::runInstanceSegmentation);
-
-    QAction* landmarkAction = toolbar->addAction(tr("Landmarks"));
-    landmarkAction->setToolTip(tr("Run 3DTeethLand landmark detection"));
-    connect(landmarkAction, &QAction::triggered, this, &MainWindow::runLandmarkDetection);
 
     toolbar->addSeparator();
 
@@ -467,66 +430,5 @@ void MainWindow::createLabelCheckboxes()
 
         // Insert before the stretch
         m_labelsLayout->insertWidget(m_labelsLayout->count() - 1, cb);
-    }
-}
-
-void MainWindow::runInstanceSegmentation()
-{
-    if (m_currentFilePath.isEmpty()) {
-        QMessageBox::warning(this, tr("Error"), tr("Please load a mesh file first."));
-        return;
-    }
-
-    QFileInfo fi(m_currentFilePath);
-    QString outputPath = fi.absolutePath() + "/" + fi.baseName() + "_instances.ply";
-
-    m_statusLabel->setText(tr("Running 3DTeethLand instance segmentation..."));
-    m_progressBar->setVisible(true);
-    m_progressBar->setRange(0, 0);
-
-    m_segmentation->runTeethLandAsync(m_currentFilePath, outputPath,
-                                       Segmentation::TeethLandInstances, m_isUpperJaw);
-}
-
-void MainWindow::runLandmarkDetection()
-{
-    if (m_currentFilePath.isEmpty()) {
-        QMessageBox::warning(this, tr("Error"), tr("Please load a mesh file first."));
-        return;
-    }
-
-    QFileInfo fi(m_currentFilePath);
-    QString outputPath = fi.absolutePath() + "/" + fi.baseName() + "_landmarks.json";
-
-    m_statusLabel->setText(tr("Running 3DTeethLand landmark detection..."));
-    m_progressBar->setVisible(true);
-    m_progressBar->setRange(0, 0);
-
-    m_segmentation->runTeethLandAsync(m_currentFilePath, outputPath,
-                                       Segmentation::TeethLandLandmarks, m_isUpperJaw);
-}
-
-void MainWindow::onLandmarksFinished(bool success, const QString& jsonPath, const QString& plyPath)
-{
-    m_progressBar->setVisible(false);
-
-    if (success && !plyPath.isEmpty()) {
-        // Load landmarks as point cloud
-        auto landmarks = MeshLoader::load(plyPath.toStdString());
-        if (landmarks) {
-            m_glWidget->loadLandmarks(std::move(landmarks));
-            m_statusLabel->setText(tr("Landmarks detected: %1").arg(QFileInfo(jsonPath).fileName()));
-
-            // Show landmarks controls
-            m_landmarksGroup->show();
-            m_landmarksVisibleCheck->setChecked(true);
-        } else {
-            m_statusLabel->setText(tr("Failed to load landmarks"));
-        }
-    } else {
-        QString error = m_segmentation->lastError();
-        m_statusLabel->setText(tr("Landmark detection failed"));
-        QMessageBox::warning(this, tr("Landmark Error"),
-                            tr("Landmark detection failed:\n%1").arg(error));
     }
 }

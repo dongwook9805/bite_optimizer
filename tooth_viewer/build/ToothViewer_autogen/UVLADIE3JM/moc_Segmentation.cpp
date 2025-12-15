@@ -45,9 +45,6 @@ template <> constexpr inline auto Segmentation::qt_create_metaobjectdata<qt_meta
         "outputPath",
         "segmentationProgress",
         "message",
-        "landmarksFinished",
-        "jsonPath",
-        "plyPath",
         "onProcessFinished",
         "exitCode",
         "QProcess::ExitStatus",
@@ -65,18 +62,14 @@ template <> constexpr inline auto Segmentation::qt_create_metaobjectdata<qt_meta
         QtMocHelpers::SignalData<void(const QString &)>(5, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 6 },
         }}),
-        // Signal 'landmarksFinished'
-        QtMocHelpers::SignalData<void(bool, const QString &, const QString &)>(7, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::Bool, 3 }, { QMetaType::QString, 8 }, { QMetaType::QString, 9 },
-        }}),
         // Slot 'onProcessFinished'
-        QtMocHelpers::SlotData<void(int, QProcess::ExitStatus)>(10, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 11 }, { 0x80000000 | 12, 13 },
+        QtMocHelpers::SlotData<void(int, QProcess::ExitStatus)>(7, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 8 }, { 0x80000000 | 9, 10 },
         }}),
         // Slot 'onProcessOutput'
-        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onProcessError'
-        QtMocHelpers::SlotData<void()>(15, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -102,10 +95,9 @@ void Segmentation::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         switch (_id) {
         case 0: _t->segmentationFinished((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2]))); break;
         case 1: _t->segmentationProgress((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 2: _t->landmarksFinished((*reinterpret_cast< std::add_pointer_t<bool>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[2])),(*reinterpret_cast< std::add_pointer_t<QString>>(_a[3]))); break;
-        case 3: _t->onProcessFinished((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QProcess::ExitStatus>>(_a[2]))); break;
-        case 4: _t->onProcessOutput(); break;
-        case 5: _t->onProcessError(); break;
+        case 2: _t->onProcessFinished((*reinterpret_cast< std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast< std::add_pointer_t<QProcess::ExitStatus>>(_a[2]))); break;
+        case 3: _t->onProcessOutput(); break;
+        case 4: _t->onProcessError(); break;
         default: ;
         }
     }
@@ -113,8 +105,6 @@ void Segmentation::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         if (QtMocHelpers::indexOfMethod<void (Segmentation::*)(bool , const QString & )>(_a, &Segmentation::segmentationFinished, 0))
             return;
         if (QtMocHelpers::indexOfMethod<void (Segmentation::*)(const QString & )>(_a, &Segmentation::segmentationProgress, 1))
-            return;
-        if (QtMocHelpers::indexOfMethod<void (Segmentation::*)(bool , const QString & , const QString & )>(_a, &Segmentation::landmarksFinished, 2))
             return;
     }
 }
@@ -138,14 +128,14 @@ int Segmentation::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 6)
+        if (_id < 5)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 6;
+        _id -= 5;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 6)
+        if (_id < 5)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 6;
+        _id -= 5;
     }
     return _id;
 }
@@ -160,11 +150,5 @@ void Segmentation::segmentationFinished(bool _t1, const QString & _t2)
 void Segmentation::segmentationProgress(const QString & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 1, nullptr, _t1);
-}
-
-// SIGNAL 2
-void Segmentation::landmarksFinished(bool _t1, const QString & _t2, const QString & _t3)
-{
-    QMetaObject::activate<void>(this, &staticMetaObject, 2, nullptr, _t1, _t2, _t3);
 }
 QT_WARNING_POP

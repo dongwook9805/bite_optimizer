@@ -9,7 +9,6 @@ GLWidget::GLWidget(QWidget* parent)
     , m_meshVbo(QOpenGLBuffer::VertexBuffer)
     , m_meshEbo(QOpenGLBuffer::IndexBuffer)
     , m_pcVbo(QOpenGLBuffer::VertexBuffer)
-    , m_lmVbo(QOpenGLBuffer::VertexBuffer)
 {
     setFocusPolicy(Qt::StrongFocus);
 
@@ -27,8 +26,6 @@ GLWidget::~GLWidget()
     m_meshEbo.destroy();
     m_pcVao.destroy();
     m_pcVbo.destroy();
-    m_lmVao.destroy();
-    m_lmVbo.destroy();
     delete m_shaderProgram;
     doneCurrent();
 }
@@ -52,10 +49,6 @@ void GLWidget::initializeGL()
     // Create point cloud VAO/VBO
     m_pcVao.create();
     m_pcVbo.create();
-
-    // Create landmark VAO/VBO
-    m_lmVao.create();
-    m_lmVbo.create();
 }
 
 void GLWidget::setupShaders()
@@ -180,20 +173,6 @@ void GLWidget::paintGL()
         m_pcVao.bind();
         glDrawArrays(GL_POINTS, 0, m_filteredPcVertexCount);
         m_pcVao.release();
-        glEnable(GL_CULL_FACE);
-    }
-
-    // Draw landmarks (larger points)
-    if (m_landmarksVisible && m_landmarks && m_landmarkCount > 0) {
-        m_shaderProgram->setUniformValue("isPointCloud", true);
-        m_shaderProgram->setUniformValue("pointSize", 15.0f);  // Larger points for landmarks
-
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_TEST);  // Draw landmarks on top
-        m_lmVao.bind();
-        glDrawArrays(GL_POINTS, 0, m_landmarkCount);
-        m_lmVao.release();
-        glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
     }
 
@@ -365,52 +344,6 @@ void GLWidget::setLabelVisible(int label, bool visible)
     m_pcVao.release();
     doneCurrent();
 
-    update();
-}
-
-void GLWidget::loadLandmarks(std::unique_ptr<Mesh> landmarks)
-{
-    m_landmarks = std::move(landmarks);
-
-    if (!m_landmarks) return;
-
-    // Use same normalization as mesh (if mesh is loaded)
-    if (m_mesh) {
-        m_landmarks->centerAndNormalizeWith(m_mesh->originalCenter(), m_mesh->originalScale());
-    } else {
-        m_landmarks->centerAndNormalize();
-    }
-
-    updateLandmarkBuffers();
-    update();
-}
-
-void GLWidget::updateLandmarkBuffers()
-{
-    if (!m_landmarks) return;
-
-    makeCurrent();
-    m_lmVao.bind();
-
-    std::vector<float> vertexData = m_landmarks->getVertexBuffer();
-    m_lmVbo.bind();
-    m_lmVbo.allocate(vertexData.data(), vertexData.size() * sizeof(float));
-    m_landmarkCount = m_landmarks->vertexCount();
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    m_lmVao.release();
-    doneCurrent();
-}
-
-void GLWidget::setLandmarksVisible(bool visible)
-{
-    m_landmarksVisible = visible;
     update();
 }
 

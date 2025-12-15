@@ -60,27 +60,6 @@ QString Segmentation::findSegmentScript()
     return QString();
 }
 
-QString Segmentation::findTeethLandScript()
-{
-    QString appDir = QCoreApplication::applicationDirPath();
-
-    QStringList searchPaths = {
-        appDir + "/../Resources/scripts/teethland_infer.py",
-        appDir + "/scripts/teethland_infer.py",
-        appDir + "/../../../scripts/teethland_infer.py",
-        QDir::homePath() + "/Desktop/bite_optimizer/tooth_viewer/scripts/teethland_infer.py"
-    };
-
-    for (const QString& path : searchPaths) {
-        QFileInfo fi(path);
-        if (fi.exists()) {
-            return fi.absoluteFilePath();
-        }
-    }
-
-    return QString();
-}
-
 bool Segmentation::runSegmentation(const QString& inputPath, const QString& outputPath, bool isUpper)
 {
     QString python = findPythonExecutable();
@@ -166,75 +145,10 @@ void Segmentation::onProcessFinished(int exitCode, QProcess::ExitStatus exitStat
         m_lastError = QString::fromUtf8(m_process->readAllStandardError());
     }
 
-    if (m_currentMode == TeethLandLandmarks || m_currentMode == TeethLandBoth) {
-        // For landmarks, emit with JSON and PLY paths
-        QString jsonPath = m_outputPath;
-        QString plyPath = m_outputPath;
-        if (jsonPath.endsWith(".json")) {
-            plyPath = jsonPath.replace(".json", ".ply");
-        }
-        emit landmarksFinished(success, success ? jsonPath : QString(), success ? plyPath : QString());
-    }
-
-    if (m_currentMode == CrossTooth || m_currentMode == TeethLandInstances || m_currentMode == TeethLandBoth) {
-        emit segmentationFinished(success, success ? m_outputPath : QString());
-    }
+    emit segmentationFinished(success, success ? m_outputPath : QString());
 
     m_process->deleteLater();
     m_process = nullptr;
-}
-
-void Segmentation::runTeethLandAsync(const QString& inputPath, const QString& outputPath,
-                                      InferenceMode mode, bool isUpper)
-{
-    if (m_process) {
-        m_process->kill();
-        m_process->deleteLater();
-    }
-
-    QString python = findPythonExecutable();
-    QString script = findTeethLandScript();
-
-    if (script.isEmpty()) {
-        m_lastError = "3DTeethLand script not found";
-        emit segmentationFinished(false, QString());
-        return;
-    }
-
-    m_outputPath = outputPath;
-    m_currentMode = mode;
-
-    QStringList args;
-    args << script;
-    args << "--input" << inputPath;
-    args << "--output" << outputPath;
-
-    // Set mode
-    switch (mode) {
-        case TeethLandInstances:
-            args << "--mode" << "instances";
-            break;
-        case TeethLandLandmarks:
-            args << "--mode" << "landmarks";
-            break;
-        case TeethLandBoth:
-        default:
-            args << "--mode" << "both";
-            break;
-    }
-
-    if (isUpper) {
-        args << "--upper";
-    }
-
-    m_process = new QProcess(this);
-    connect(m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, &Segmentation::onProcessFinished);
-    connect(m_process, &QProcess::readyReadStandardOutput, this, &Segmentation::onProcessOutput);
-    connect(m_process, &QProcess::readyReadStandardError, this, &Segmentation::onProcessError);
-
-    emit segmentationProgress("Starting 3DTeethLand inference...");
-    m_process->start(python, args);
 }
 
 void Segmentation::onProcessOutput()
