@@ -11,6 +11,14 @@
 #include <memory>
 #include <set>
 #include "Mesh.h"
+#include "BiteSimulator.h"
+
+// Landmark for alignment
+struct Landmark {
+    Eigen::Vector3f position;
+    bool isMaxilla;  // true = maxilla, false = mandible
+    int index;       // landmark pair index (0, 1, 2, ...)
+};
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
@@ -25,6 +33,40 @@ public:
     Mesh* mesh() const { return m_mesh.get(); }
     Mesh* pointCloud() const { return m_pointCloud.get(); }
 
+    // Bite optimization: dual mesh support
+    void loadMaxilla(std::unique_ptr<Mesh> maxilla);
+    void loadMandible(std::unique_ptr<Mesh> mandible);
+    void updateMaxillaFromSimulator(Mesh* maxilla);
+    void updateMandibleFromSimulator(Mesh* mandible);
+    void updateMandibleColors(const std::vector<Eigen::Vector3f>& colors);
+    Mesh* maxilla() const { return m_maxilla.get(); }
+    Mesh* mandible() const { return m_mandible.get(); }
+    void setMaxillaVisible(bool visible);
+    void setMandibleVisible(bool visible);
+    bool isMaxillaVisible() const { return m_maxillaVisible; }
+    bool isMandibleVisible() const { return m_mandibleVisible; }
+
+    // Contact point visualization
+    void updateContactPoints(const std::vector<ContactPoint>& contactPoints);
+    void setContactPointsVisible(bool visible);
+    bool isContactPointsVisible() const { return m_contactPointsVisible; }
+
+    // Landmark picking mode
+    void setLandmarkPickingMode(bool enable);
+    bool isLandmarkPickingMode() const { return m_landmarkPickingMode; }
+    void clearLandmarks();
+    const std::vector<Landmark>& landmarks() const { return m_landmarks; }
+    int landmarkPairCount() const;  // Number of complete pairs
+
+    // Manual jaw movement mode
+    void setManualMoveMode(bool enable);
+    bool isManualMoveMode() const { return m_manualMoveMode; }
+    void setMovingMaxilla(bool moveMaxilla) { m_movingMaxilla = moveMaxilla; }
+    bool isMovingMaxilla() const { return m_movingMaxilla; }
+
+    // Set BiteSimulator reference for manual movement
+    void setBiteSimulator(BiteSimulator* simulator) { m_biteSimulator = simulator; }
+
     void resetView();
     void setWireframe(bool enable);
 
@@ -37,6 +79,12 @@ public:
 
 signals:
     void meshLoaded(size_t vertices, size_t faces);
+    void biteDataLoaded();
+    void landmarkPicked(const Landmark& landmark);
+    void landmarkPairComplete(int pairIndex);
+    void jawMoved();  // Emitted when user manually moves a jaw (expensive update)
+    void jawMovedFast();  // Emitted during dragging (skip expensive calculations)
+    void jawSelectionChanged(bool movingMaxilla);  // Emitted when Tab switches jaw
 
 protected:
     void initializeGL() override;
@@ -44,21 +92,37 @@ protected:
     void paintGL() override;
 
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
     void setupShaders();
     void updateMeshBuffers();
     void updatePointCloudBuffers();
+    void updateMaxillaBuffers();
+    void updateMandibleBuffers();
+    void updateContactPointBuffers();
+    void updateLandmarkBuffers();
     void rebuildFilteredPointCloud();
+    void adjustCameraToFitMeshes();
     QVector3D arcballVector(int x, int y);
+
+    // Ray casting for picking
+    bool pickVertex(int mouseX, int mouseY, Eigen::Vector3f& hitPoint, bool& hitMaxilla);
+    Eigen::Vector3f screenToWorldRay(int x, int y);
+    Eigen::Vector3f getCameraPosition();
 
     // Mesh data (original mesh)
     std::unique_ptr<Mesh> m_mesh;
     // Point cloud data (segmentation result)
     std::unique_ptr<Mesh> m_pointCloud;
     std::vector<int> m_pointLabels;  // Label for each point
+
+    // Bite optimization meshes
+    std::unique_ptr<Mesh> m_maxilla;   // Upper jaw (fixed)
+    std::unique_ptr<Mesh> m_mandible;  // Lower jaw (movable)
 
     // OpenGL objects for mesh
     QOpenGLShaderProgram* m_shaderProgram = nullptr;
@@ -70,6 +134,34 @@ private:
     QOpenGLVertexArrayObject m_pcVao;
     QOpenGLBuffer m_pcVbo;
 
+    // OpenGL objects for maxilla
+    QOpenGLVertexArrayObject m_maxillaVao;
+    QOpenGLBuffer m_maxillaVbo;
+    QOpenGLBuffer m_maxillaEbo;
+
+    // OpenGL objects for mandible
+    QOpenGLVertexArrayObject m_mandibleVao;
+    QOpenGLBuffer m_mandibleVbo;
+    QOpenGLBuffer m_mandibleEbo;
+
+    // OpenGL objects for contact points
+    QOpenGLVertexArrayObject m_contactVao;
+    QOpenGLBuffer m_contactVbo;
+    std::vector<ContactPoint> m_contactPoints;
+
+    // OpenGL objects for landmarks
+    QOpenGLVertexArrayObject m_landmarkVao;
+    QOpenGLBuffer m_landmarkVbo;
+    std::vector<Landmark> m_landmarks;
+    bool m_landmarkPickingMode = false;
+    int m_currentLandmarkPair = 0;  // Which pair we're picking
+    bool m_expectingMaxilla = true;  // Next click should be maxilla?
+
+    // Manual jaw movement
+    bool m_manualMoveMode = false;
+    bool m_movingMaxilla = false;  // false = moving mandible (default)
+    BiteSimulator* m_biteSimulator = nullptr;  // Reference for applying transforms
+
     // Matrices
     QMatrix4x4 m_projection;
     QMatrix4x4 m_view;
@@ -78,6 +170,8 @@ private:
     // Camera
     float m_zoom = 3.0f;
     QQuaternion m_rotation;
+    QVector3D m_cameraTarget;  // Point camera looks at
+    float m_meshScale = 1.0f;  // Scale factor for proper interaction
 
     // Mouse interaction
     QPoint m_lastMousePos;
@@ -85,10 +179,17 @@ private:
     bool m_panning = false;
     QVector3D m_panOffset;
 
+    // Mesh dragging (Ctrl+drag to move selected mesh)
+    bool m_draggingMesh = false;
+    bool m_draggingRotate = false;  // true = rotate, false = translate
+
     // Render options
     bool m_wireframe = false;
     bool m_meshVisible = true;
     bool m_pointCloudVisible = true;
+    bool m_maxillaVisible = true;
+    bool m_mandibleVisible = true;
+    bool m_contactPointsVisible = true;
     std::set<int> m_visibleLabels;  // Which labels are visible
 
     // Counts for drawing
@@ -96,6 +197,9 @@ private:
     int m_meshVertexCount = 0;
     int m_pcVertexCount = 0;
     int m_filteredPcVertexCount = 0;
+    int m_maxillaIndexCount = 0;
+    int m_mandibleIndexCount = 0;
+    int m_contactPointCount = 0;
 };
 
 #endif // GLWIDGET_H

@@ -13,6 +13,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)
 # Find Eigen3
 find_package(Eigen3 REQUIRED)
 
+# Find OpenMP (optional, for parallel processing)
+find_package(OpenMP QUIET)
+
 # Find ONNX Runtime (optional for now)
 find_package(onnxruntime QUIET)
 
@@ -24,6 +27,7 @@ set(SOURCES
     src/Mesh.cpp
     src/MeshLoader.cpp
     src/Segmentation.cpp
+    src/BiteSimulator.cpp
 )
 
 set(HEADERS
@@ -32,6 +36,7 @@ set(HEADERS
     src/Mesh.h
     src/MeshLoader.h
     src/Segmentation.h
+    src/BiteSimulator.h
 )
 
 # Shader files as resources
@@ -52,6 +57,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::OpenGLWidgets
     Eigen3::Eigen
 )
+
+# Link OpenMP if available
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+endif()
 
 # Include directories
 target_include_directories(${PROJECT_NAME} PRIVATE

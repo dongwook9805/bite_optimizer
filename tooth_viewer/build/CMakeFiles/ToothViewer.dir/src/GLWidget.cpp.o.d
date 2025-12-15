@@ -1227,6 +1227,7 @@ CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o: \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/Umeyama.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/Geometry_SIMD.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/../InternalHeaderCheck.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/BiteSimulator.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QMouseEvent \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qevent.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcoreevent.h \
@@ -1254,4 +1255,5 @@ CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qlocale.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qguiapplication_platform.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QWheelEvent \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QKeyEvent \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iostream

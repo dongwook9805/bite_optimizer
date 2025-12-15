@@ -4,6 +4,8 @@ file(REMOVE_RECURSE
   "ToothViewer_autogen"
   "CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o"
   "CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o.d"
+  "CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o"
+  "CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o.d"
   "CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o"
   "CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o.d"
   "CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o"

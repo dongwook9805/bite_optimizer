@@ -171,6 +171,15 @@ void Mesh::setUniformColor(const Eigen::Vector3f& color)
     }
 }
 
+void Mesh::setVertexColors(const std::vector<Eigen::Vector3f>& colors)
+{
+    if (colors.size() != m_vertices.size()) return;
+
+    for (size_t i = 0; i < m_vertices.size(); ++i) {
+        m_vertices[i].color = colors[i];
+    }
+}
+
 void Mesh::setFaceColors(const std::vector<Eigen::Vector3f>& colors)
 {
     if (colors.size() != m_faces.size()) return;

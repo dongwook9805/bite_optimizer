@@ -1228,6 +1228,7 @@ CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o: \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/Umeyama.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/Geometry_SIMD.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/../InternalHeaderCheck.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/UVLADIE3JM/../../../src/BiteSimulator.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtmochelpers.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtmocconstants.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/q20algorithm.h \
@@ -1258,6 +1259,24 @@ CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayoutitem.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgridlayout.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QTimer \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qbasictimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qabstracteventdispatcher.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qeventloop.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qdeadlinetimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qelapsedtimer.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QPushButton \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qpushbutton.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QSlider \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qslider.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractslider.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QDoubleSpinBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qspinbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractspinbox.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qvalidator.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qregularexpression.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qlocale.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/UVLADIE3JM/../../../src/Segmentation.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QString \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QProcess \

@@ -985,6 +985,24 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qlayoutitem.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qgridlayout.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QTimer \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qbasictimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qabstracteventdispatcher.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qeventloop.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qdeadlinetimer.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qelapsedtimer.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QPushButton \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qpushbutton.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QSlider \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qslider.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractslider.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QDoubleSpinBox \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qspinbox.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractspinbox.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qvalidator.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qregularexpression.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qlocale.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/GLWidget.h \
   /opt/homebrew/opt/qt/lib/QtOpenGLWidgets.framework/Headers/QOpenGLWidget \
   /opt/homebrew/opt/qt/lib/QtOpenGLWidgets.framework/Headers/qopenglwidget.h \
@@ -1252,6 +1270,7 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/Umeyama.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/Geometry_SIMD.h \
   /opt/homebrew/include/eigen3/Eigen/src/Geometry/arch/../InternalHeaderCheck.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/BiteSimulator.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Segmentation.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QString \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QProcess \
@@ -1271,7 +1290,6 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qfiledevice.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qdatetime.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcalendar.h \
-  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qlocale.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qfile.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/filesystem \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/copy_options.h \
@@ -1302,8 +1320,15 @@ CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qtemporaryfile.h \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/QDir \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QHBoxLayout \
-  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QPushButton \
-  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QScrollArea \
   /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qscrollarea.h \
-  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractscrollarea.h
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QApplication \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/qapplication.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcoreapplication.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcoreevent.h \
+  /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcoreapplication_platform.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qguiapplication.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qinputmethod.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qguiapplication_platform.h \
+  /opt/homebrew/opt/qt/lib/QtWidgets.framework/Headers/QFrame

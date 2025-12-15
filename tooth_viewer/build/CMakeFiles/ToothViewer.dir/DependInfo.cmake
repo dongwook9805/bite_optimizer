@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "" "ToothViewer_autogen/timestamp" "custom" "ToothViewer_autogen/deps"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/mocs_compilation.cpp" "CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o.d"
+  "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/BiteSimulator.cpp" "CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/GLWidget.cpp" "CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/MainWindow.cpp" "CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o.d"
   "/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Mesh.cpp" "CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o" "gcc" "CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o.d"

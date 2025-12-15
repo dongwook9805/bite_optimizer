@@ -78,7 +78,7 @@ def normalize_pointcloud(points):
     return points_normalized, centroid, max_dist
 
 
-def load_mesh_as_pointcloud(filepath, num_points=16000):
+def load_mesh_as_pointcloud(filepath, num_points=32000):
     """Load OBJ/PLY file and sample face centroids (like CrossTooth)"""
     import trimesh
 
@@ -119,7 +119,7 @@ def load_mesh_as_pointcloud(filepath, num_points=16000):
     return pointcloud, cell_coords, mesh, sampled_indices
 
 
-def demo_segment(input_path, output_path, num_points=16000):
+def demo_segment(input_path, output_path, num_points=32000):
     """Demo segmentation without AI model - colors based on position"""
     print(f"Loading mesh from {input_path}...")
     pointcloud, points, mesh, sampled_indices = load_mesh_as_pointcloud(input_path, num_points)
@@ -153,7 +153,7 @@ def demo_segment(input_path, output_path, num_points=16000):
     return pred_mask
 
 
-def segment_with_ai(input_path, output_path, model_path, num_points=16000, is_upper=True):
+def segment_with_ai(input_path, output_path, model_path, num_points=32000, is_upper=True):
     """Run AI segmentation on mesh file"""
     device = torch.device("cpu")
 
@@ -291,7 +291,7 @@ def main():
     parser.add_argument("--model", "-m",
                        default=os.path.join(CROSSTOOTH_PATH, "models/PTv1/point_best_model.pth"),
                        help="Model path")
-    parser.add_argument("--points", "-n", type=int, default=16000, help="Number of sample points")
+    parser.add_argument("--points", "-n", type=int, default=32000, help="Number of sample points")
     parser.add_argument("--upper", action="store_true", help="Use upper jaw color palette")
     parser.add_argument("--demo", action="store_true", help="Force demo mode (no AI)")
 

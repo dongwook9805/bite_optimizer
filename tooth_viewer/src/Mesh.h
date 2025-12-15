@@ -59,6 +59,7 @@ public:
 
     // Color operations
     void setUniformColor(const Eigen::Vector3f& color);
+    void setVertexColors(const std::vector<Eigen::Vector3f>& colors);
     void setFaceColors(const std::vector<Eigen::Vector3f>& colors);
 
 private:

@@ -746,6 +746,7 @@
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/limits.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/ptrcheck.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/17/include/stdarg.h \
+  /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/BiteSimulator.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/src/Mesh.h \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/Cholesky \
   /opt/homebrew/Cellar/eigen/5.0.1/include/eigen3/Eigen/Core \

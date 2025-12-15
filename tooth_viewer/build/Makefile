@@ -179,6 +179,30 @@ ToothViewer_autogen/mocs_compilation.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.s
 .PHONY : ToothViewer_autogen/mocs_compilation.cpp.s
 
+src/BiteSimulator.o: src/BiteSimulator.cpp.o
+.PHONY : src/BiteSimulator.o
+
+# target to build an object file
+src/BiteSimulator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o
+.PHONY : src/BiteSimulator.cpp.o
+
+src/BiteSimulator.i: src/BiteSimulator.cpp.i
+.PHONY : src/BiteSimulator.i
+
+# target to preprocess a source file
+src/BiteSimulator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.i
+.PHONY : src/BiteSimulator.cpp.i
+
+src/BiteSimulator.s: src/BiteSimulator.cpp.s
+.PHONY : src/BiteSimulator.s
+
+# target to generate assembly for a file
+src/BiteSimulator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.s
+.PHONY : src/BiteSimulator.cpp.s
+
 src/GLWidget.o: src/GLWidget.cpp.o
 .PHONY : src/GLWidget.o
 
@@ -337,6 +361,9 @@ help:
 	@echo "... ToothViewer_autogen/mocs_compilation.o"
 	@echo "... ToothViewer_autogen/mocs_compilation.i"
 	@echo "... ToothViewer_autogen/mocs_compilation.s"
+	@echo "... src/BiteSimulator.o"
+	@echo "... src/BiteSimulator.i"
+	@echo "... src/BiteSimulator.s"
 	@echo "... src/GLWidget.o"
 	@echo "... src/GLWidget.i"
 	@echo "... src/GLWidget.s"
