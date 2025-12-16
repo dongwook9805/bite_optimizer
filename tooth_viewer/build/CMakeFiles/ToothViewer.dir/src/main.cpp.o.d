@@ -1032,6 +1032,10 @@ CMakeFiles/ToothViewer.dir/src/main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/inttypes.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_inttypes.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/xlocale/_inttypes.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QPainter \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpainter.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextoption.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpen.h \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/QOpenGLFunctions_3_3_Core \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/qopenglfunctions_3_3_core.h \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/qtopenglglobal.h \

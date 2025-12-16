@@ -981,6 +981,10 @@ CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/inttypes.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_inttypes.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/xlocale/_inttypes.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/QPainter \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpainter.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextoption.h \
+  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpen.h \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/QOpenGLFunctions_3_3_Core \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/qopenglfunctions_3_3_core.h \
   /opt/homebrew/opt/qt/lib/QtOpenGL.framework/Headers/qtopenglglobal.h \
@@ -1283,6 +1287,4 @@ CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o: \
   /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qprocess.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextcursor.h \
   /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextformat.h \
-  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qpen.h \
-  /opt/homebrew/opt/qt/lib/QtGui.framework/Headers/qtextoption.h \
   /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/ToothViewer_autogen/UVLADIE3JM/moc_Segmentation.cpp
