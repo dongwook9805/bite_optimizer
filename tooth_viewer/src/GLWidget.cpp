@@ -39,6 +39,10 @@ GLWidget::~GLWidget()
     m_mandibleVao.destroy();
     m_mandibleVbo.destroy();
     m_mandibleEbo.destroy();
+    m_maxillaSegVao.destroy();
+    m_maxillaSegVbo.destroy();
+    m_mandibleSegVao.destroy();
+    m_mandibleSegVbo.destroy();
     m_contactVao.destroy();
     m_contactVbo.destroy();
     m_landmarkVao.destroy();
@@ -76,6 +80,12 @@ void GLWidget::initializeGL()
     m_mandibleVao.create();
     m_mandibleVbo.create();
     m_mandibleEbo.create();
+
+    // Create segmentation point cloud VAO/VBO
+    m_maxillaSegVao.create();
+    m_maxillaSegVbo.create();
+    m_mandibleSegVao.create();
+    m_mandibleSegVbo.create();
 
     // Create contact points VAO/VBO
     m_contactVao.create();
@@ -247,6 +257,28 @@ void GLWidget::paintGL()
         m_mandibleVao.release();
     }
 
+    // Draw maxilla segmentation points
+    if (m_maxillaSegVisible && m_maxillaSegVertexCount > 0) {
+        m_shaderProgram->setUniformValue("isPointCloud", true);
+        m_shaderProgram->setUniformValue("pointSize", 4.0f);
+        glDisable(GL_CULL_FACE);
+        m_maxillaSegVao.bind();
+        glDrawArrays(GL_POINTS, 0, m_maxillaSegVertexCount);
+        m_maxillaSegVao.release();
+        glEnable(GL_CULL_FACE);
+    }
+
+    // Draw mandible segmentation points
+    if (m_mandibleSegVisible && m_mandibleSegVertexCount > 0) {
+        m_shaderProgram->setUniformValue("isPointCloud", true);
+        m_shaderProgram->setUniformValue("pointSize", 4.0f);
+        glDisable(GL_CULL_FACE);
+        m_mandibleSegVao.bind();
+        glDrawArrays(GL_POINTS, 0, m_mandibleSegVertexCount);
+        m_mandibleSegVao.release();
+        glEnable(GL_CULL_FACE);
+    }
+
     // Draw contact points (green = good, red = penetration)
     if (m_contactPointsVisible && m_contactPointCount > 0) {
         m_shaderProgram->setUniformValue("isPointCloud", true);
@@ -326,10 +358,13 @@ void GLWidget::loadPointCloud(std::unique_ptr<Mesh> pointCloud)
         std::cout << "Reverse-mapped " << m_pointLabels.size() << " labels from colors" << std::endl;
     }
 
-    // Use same normalization as mesh (if mesh is loaded)
-    // This ensures point cloud aligns with the mesh
-    if (m_mesh) {
-        // Apply same transformation: use mesh's original center and scale
+    // In bite mode (maxilla/mandible loaded), don't normalize - keep original coordinates
+    // Otherwise, normalize to align with single mesh
+    if (m_maxilla || m_mandible) {
+        // Bite mode: keep original coordinates (meshes are not normalized)
+        std::cout << "Point cloud loaded in bite mode (no normalization)" << std::endl;
+    } else if (m_mesh) {
+        // Single mesh mode: align with mesh
         m_pointCloud->centerAndNormalizeWith(m_mesh->originalCenter(), m_mesh->originalScale());
     } else {
         m_pointCloud->centerAndNormalize();
@@ -337,6 +372,278 @@ void GLWidget::loadPointCloud(std::unique_ptr<Mesh> pointCloud)
 
     updatePointCloudBuffers();
     update();
+}
+
+void GLWidget::loadMaxillaSegmentation(std::unique_ptr<Mesh> segPoints)
+{
+    m_maxillaSeg = std::move(segPoints);
+    if (!m_maxillaSeg) return;
+
+    std::cout << "Loading maxilla segmentation: " << m_maxillaSeg->vertexCount() << " points"
+              << (m_maxillaSeg->hasLabels() ? ", with labels" : "") << std::endl;
+
+    makeCurrent();
+    m_maxillaSegVao.bind();
+
+    std::vector<float> vertexData = m_maxillaSeg->getVertexBuffer();
+    m_maxillaSegVbo.bind();
+    m_maxillaSegVbo.allocate(vertexData.data(), vertexData.size() * sizeof(float));
+    m_maxillaSegVertexCount = m_maxillaSeg->vertexCount();
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    m_maxillaSegVao.release();
+    doneCurrent();
+
+    // Update tooth centroids for FDI labels
+    updateToothCentroids();
+
+    update();
+}
+
+void GLWidget::loadMandibleSegmentation(std::unique_ptr<Mesh> segPoints)
+{
+    m_mandibleSeg = std::move(segPoints);
+    if (!m_mandibleSeg) return;
+
+    std::cout << "Loading mandible segmentation: " << m_mandibleSeg->vertexCount() << " points"
+              << (m_mandibleSeg->hasLabels() ? ", with labels" : "") << std::endl;
+
+    makeCurrent();
+    m_mandibleSegVao.bind();
+
+    std::vector<float> vertexData = m_mandibleSeg->getVertexBuffer();
+    m_mandibleSegVbo.bind();
+    m_mandibleSegVbo.allocate(vertexData.data(), vertexData.size() * sizeof(float));
+    m_mandibleSegVertexCount = m_mandibleSeg->vertexCount();
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    m_mandibleSegVao.release();
+    doneCurrent();
+
+    // Update tooth centroids for FDI labels
+    updateToothCentroids();
+
+    update();
+}
+
+void GLWidget::setMaxillaSegVisible(bool visible)
+{
+    m_maxillaSegVisible = visible;
+    update();
+}
+
+void GLWidget::setMandibleSegVisible(bool visible)
+{
+    m_mandibleSegVisible = visible;
+    update();
+}
+
+void GLWidget::setFDILabelsVisible(bool visible)
+{
+    m_fdiLabelsMaxillaVisible = visible;
+    m_fdiLabelsMandibleVisible = visible;
+    update();
+}
+
+void GLWidget::setMaxillaFDILabelsVisible(bool visible)
+{
+    m_fdiLabelsMaxillaVisible = visible;
+    update();
+}
+
+void GLWidget::setMandibleFDILabelsVisible(bool visible)
+{
+    m_fdiLabelsMandibleVisible = visible;
+    update();
+}
+
+int GLWidget::segLabelToFDI(int segLabel, bool isMaxilla)
+{
+    // CrossTooth labels 1-16 mapping:
+    // Label 1-8 = UL/LL (patient's Left side)
+    // Label 9-16 = UR/LR (patient's Right side)
+    //
+    // FDI notation (from front view, left-to-right = patient's right-to-left):
+    // Upper: 18 17 16 15 14 13 12 11 | 21 22 23 24 25 26 27 28
+    //        UR8...UR1               | UL1...UL8
+    //        label 16...9            | label 1...8
+    //
+    // Lower: 48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38
+    //        LR8...LR1               | LL1...LL8
+    //        label 16...9            | label 1...8
+
+    if (segLabel < 1 || segLabel > 16) return 0;
+
+    if (isMaxilla) {
+        // Upper jaw
+        if (segLabel <= 8) {
+            // UL1-UL8 → FDI 21-28
+            return 20 + segLabel;  // 1→21, 2→22, ..., 8→28
+        } else {
+            // UR1-UR8 → FDI 11-18
+            return segLabel + 2;   // 9→11, 10→12, ..., 16→18
+        }
+    } else {
+        // Lower jaw
+        if (segLabel <= 8) {
+            // LL1-LL8 → FDI 31-38
+            return 30 + segLabel;  // 1→31, 2→32, ..., 8→38
+        } else {
+            // LR1-LR8 → FDI 41-48
+            return segLabel + 32;  // 9→41, 10→42, ..., 16→48
+        }
+    }
+}
+
+void GLWidget::calculateToothCentroidsFromMesh(Mesh* mesh, bool isMaxilla)
+{
+    if (!mesh || !mesh->hasLabels()) return;
+
+    const auto& vertices = mesh->vertices();
+    const auto& labels = mesh->labels();
+
+    // Group vertices by label
+    std::map<int, std::vector<Eigen::Vector3f>> labelPoints;
+
+    for (size_t i = 0; i < vertices.size() && i < labels.size(); ++i) {
+        int label = labels[i];
+        if (label >= 1 && label <= 16) {  // Only teeth (skip gingiva label 0)
+            labelPoints[label].push_back(vertices[i].position);
+        }
+    }
+
+    // Calculate centroid for each tooth
+    for (const auto& [label, points] : labelPoints) {
+        if (points.empty()) continue;
+
+        Eigen::Vector3f centroid = Eigen::Vector3f::Zero();
+        for (const auto& p : points) {
+            centroid += p;
+        }
+        centroid /= static_cast<float>(points.size());
+
+        // Offset centroid upward a bit for better visibility
+        centroid.z() += (isMaxilla ? 3.0f : -3.0f);  // Move label above/below tooth
+
+        ToothCentroid tc;
+        tc.position = centroid;
+        tc.segLabel = label;
+        tc.fdiNumber = segLabelToFDI(label, isMaxilla);
+        tc.isMaxilla = isMaxilla;
+
+        m_toothCentroids.push_back(tc);
+    }
+
+    std::cout << "Calculated " << m_toothCentroids.size() << " tooth centroids for "
+              << (isMaxilla ? "maxilla" : "mandible") << std::endl;
+}
+
+void GLWidget::updateToothCentroids()
+{
+    m_toothCentroids.clear();
+
+    // Calculate from maxilla segmentation
+    if (m_maxillaSeg && m_maxillaSeg->hasLabels()) {
+        calculateToothCentroidsFromMesh(m_maxillaSeg.get(), true);
+    }
+
+    // Calculate from mandible segmentation
+    if (m_mandibleSeg && m_mandibleSeg->hasLabels()) {
+        calculateToothCentroidsFromMesh(m_mandibleSeg.get(), false);
+    }
+
+    update();
+}
+
+QPoint GLWidget::projectToScreen(const Eigen::Vector3f& worldPos)
+{
+    // Transform world position through MVP matrices
+    QVector4D pos(worldPos.x(), worldPos.y(), worldPos.z(), 1.0f);
+
+    // Apply model-view-projection
+    QVector4D clipPos = m_projection * m_view * m_model * pos;
+
+    // Perspective divide
+    if (std::abs(clipPos.w()) < 1e-6f) return QPoint(-1, -1);
+
+    float ndcX = clipPos.x() / clipPos.w();
+    float ndcY = clipPos.y() / clipPos.w();
+    float ndcZ = clipPos.z() / clipPos.w();
+
+    // Check if point is behind camera
+    if (ndcZ < -1.0f || ndcZ > 1.0f) return QPoint(-1, -1);
+
+    // Convert to screen coordinates
+    int screenX = static_cast<int>((ndcX + 1.0f) * 0.5f * width());
+    int screenY = static_cast<int>((1.0f - ndcY) * 0.5f * height());
+
+    return QPoint(screenX, screenY);
+}
+
+void GLWidget::paintEvent(QPaintEvent* event)
+{
+    // First, do OpenGL rendering
+    QOpenGLWidget::paintEvent(event);
+
+    // Then, draw FDI labels using QPainter overlay
+    if ((!m_fdiLabelsMaxillaVisible && !m_fdiLabelsMandibleVisible) || m_toothCentroids.empty()) return;
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Set font for FDI labels
+    QFont font("Arial", 10, QFont::Bold);
+    painter.setFont(font);
+
+    for (const auto& tc : m_toothCentroids) {
+        // Check visibility based on which jaw (separate toggles)
+        if (tc.isMaxilla && !m_fdiLabelsMaxillaVisible) continue;
+        if (!tc.isMaxilla && !m_fdiLabelsMandibleVisible) continue;
+
+        // Also check if the corresponding segmentation is visible
+        if (tc.isMaxilla && !m_maxillaSegVisible) continue;
+        if (!tc.isMaxilla && !m_mandibleSegVisible) continue;
+
+        QPoint screenPos = projectToScreen(tc.position);
+
+        // Skip if off-screen
+        if (screenPos.x() < 0 || screenPos.y() < 0 ||
+            screenPos.x() > width() || screenPos.y() > height()) {
+            continue;
+        }
+
+        // Draw background for better readability
+        QString fdiText = QString::number(tc.fdiNumber);
+        QRect textRect = painter.fontMetrics().boundingRect(fdiText);
+        textRect.moveCenter(screenPos);
+        textRect.adjust(-3, -2, 3, 2);
+
+        // Background color based on jaw
+        QColor bgColor = tc.isMaxilla ? QColor(255, 200, 150, 200) : QColor(150, 200, 255, 200);
+        painter.fillRect(textRect, bgColor);
+
+        // Draw border
+        painter.setPen(QPen(Qt::black, 1));
+        painter.drawRect(textRect);
+
+        // Draw FDI number
+        painter.setPen(Qt::black);
+        painter.drawText(screenPos, fdiText);
+    }
+
+    painter.end();
 }
 
 void GLWidget::updateMeshBuffers()

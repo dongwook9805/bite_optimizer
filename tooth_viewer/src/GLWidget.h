@@ -2,6 +2,7 @@
 #define GLWIDGET_H
 
 #include <QOpenGLWidget>
+#include <QPainter>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
@@ -10,8 +11,17 @@
 #include <QVector3D>
 #include <memory>
 #include <set>
+#include <map>
 #include "Mesh.h"
 #include "BiteSimulator.h"
+
+// Tooth centroid for FDI label display
+struct ToothCentroid {
+    Eigen::Vector3f position;
+    int segLabel;    // Original segmentation label (1-16)
+    int fdiNumber;   // FDI notation (11-18, 21-28, 31-38, 41-48)
+    bool isMaxilla;
+};
 
 // Landmark for alignment
 struct Landmark {
@@ -30,8 +40,22 @@ public:
 
     void loadMesh(std::unique_ptr<Mesh> mesh);
     void loadPointCloud(std::unique_ptr<Mesh> pointCloud);
+    void loadMaxillaSegmentation(std::unique_ptr<Mesh> segPoints);
+    void loadMandibleSegmentation(std::unique_ptr<Mesh> segPoints);
     Mesh* mesh() const { return m_mesh.get(); }
     Mesh* pointCloud() const { return m_pointCloud.get(); }
+    void setMaxillaSegVisible(bool visible);
+    void setMandibleSegVisible(bool visible);
+    bool isMaxillaSegVisible() const { return m_maxillaSegVisible; }
+    bool isMandibleSegVisible() const { return m_mandibleSegVisible; }
+
+    // FDI label display
+    void setFDILabelsVisible(bool visible);  // For backward compatibility
+    void setMaxillaFDILabelsVisible(bool visible);
+    void setMandibleFDILabelsVisible(bool visible);
+    bool isMaxillaFDILabelsVisible() const { return m_fdiLabelsMaxillaVisible; }
+    bool isMandibleFDILabelsVisible() const { return m_fdiLabelsMandibleVisible; }
+    void updateToothCentroids();
 
     // Bite optimization: dual mesh support
     void loadMaxilla(std::unique_ptr<Mesh> maxilla);
@@ -96,6 +120,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
 
 private:
     void setupShaders();
@@ -113,6 +138,11 @@ private:
     bool pickVertex(int mouseX, int mouseY, Eigen::Vector3f& hitPoint, bool& hitMaxilla);
     Eigen::Vector3f screenToWorldRay(int x, int y);
     Eigen::Vector3f getCameraPosition();
+
+    // FDI label helpers
+    QPoint projectToScreen(const Eigen::Vector3f& worldPos);
+    int segLabelToFDI(int segLabel, bool isMaxilla);
+    void calculateToothCentroidsFromMesh(Mesh* mesh, bool isMaxilla);
 
     // Mesh data (original mesh)
     std::unique_ptr<Mesh> m_mesh;
@@ -143,6 +173,23 @@ private:
     QOpenGLVertexArrayObject m_mandibleVao;
     QOpenGLBuffer m_mandibleVbo;
     QOpenGLBuffer m_mandibleEbo;
+
+    // Segmentation point clouds (for bite mode)
+    std::unique_ptr<Mesh> m_maxillaSeg;
+    std::unique_ptr<Mesh> m_mandibleSeg;
+    QOpenGLVertexArrayObject m_maxillaSegVao;
+    QOpenGLBuffer m_maxillaSegVbo;
+    QOpenGLVertexArrayObject m_mandibleSegVao;
+    QOpenGLBuffer m_mandibleSegVbo;
+    int m_maxillaSegVertexCount = 0;
+    int m_mandibleSegVertexCount = 0;
+    bool m_maxillaSegVisible = true;
+    bool m_mandibleSegVisible = true;
+
+    // FDI label display
+    std::vector<ToothCentroid> m_toothCentroids;
+    bool m_fdiLabelsMaxillaVisible = true;
+    bool m_fdiLabelsMandibleVisible = true;
 
     // OpenGL objects for contact points
     QOpenGLVertexArrayObject m_contactVao;

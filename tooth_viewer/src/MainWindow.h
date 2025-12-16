@@ -35,6 +35,8 @@ private slots:
 
     // AI Segmentation (CrossTooth)
     void runAISegmentation();
+    void runBiteSegmentation();
+    void onBiteSegmentationStep();
     void onSegmentationFinished(bool success, const QString& outputPath);
     void onSegmentationProgress(const QString& message);
 
@@ -97,6 +99,10 @@ private:
     Segmentation* m_segmentation;
     bool m_isUpperJaw = true;
 
+    // Bite Segmentation State
+    enum class BiteSegState { None, SegmentingMaxilla, SegmentingMandible, Done };
+    BiteSegState m_biteSegState = BiteSegState::None;
+
     // Bite Optimization
     std::unique_ptr<BiteSimulator> m_biteSimulator;
     QTimer* m_optimizationTimer = nullptr;
@@ -122,6 +128,10 @@ private:
     QCheckBox* m_maxillaVisibleCheck;
     QCheckBox* m_mandibleVisibleCheck;
     QCheckBox* m_contactPointsCheck;
+    QCheckBox* m_maxillaSegCheck;
+    QCheckBox* m_mandibleSegCheck;
+    QCheckBox* m_fdiLabelsMaxillaCheck;
+    QCheckBox* m_fdiLabelsMandibleCheck;
 
     // Bite optimization UI elements
     QPushButton* m_roughAlignBtn;

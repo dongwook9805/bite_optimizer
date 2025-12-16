@@ -138,6 +138,38 @@ void MainWindow::setupSidePanel()
     connect(m_contactPointsCheck, &QCheckBox::toggled, this, &MainWindow::onContactPointsVisibilityChanged);
     biteLayout->addWidget(m_contactPointsCheck);
 
+    m_maxillaSegCheck = new QCheckBox(tr("Upper Seg Points"));
+    m_maxillaSegCheck->setChecked(true);
+    m_maxillaSegCheck->setToolTip(tr("Show maxilla segmentation point cloud"));
+    connect(m_maxillaSegCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMaxillaSegVisible(checked);
+    });
+    biteLayout->addWidget(m_maxillaSegCheck);
+
+    m_mandibleSegCheck = new QCheckBox(tr("Lower Seg Points"));
+    m_mandibleSegCheck->setChecked(true);
+    m_mandibleSegCheck->setToolTip(tr("Show mandible segmentation point cloud"));
+    connect(m_mandibleSegCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMandibleSegVisible(checked);
+    });
+    biteLayout->addWidget(m_mandibleSegCheck);
+
+    m_fdiLabelsMaxillaCheck = new QCheckBox(tr("Upper FDI Labels"));
+    m_fdiLabelsMaxillaCheck->setChecked(true);
+    m_fdiLabelsMaxillaCheck->setToolTip(tr("Show FDI numbers on upper jaw teeth (11-18, 21-28)"));
+    connect(m_fdiLabelsMaxillaCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMaxillaFDILabelsVisible(checked);
+    });
+    biteLayout->addWidget(m_fdiLabelsMaxillaCheck);
+
+    m_fdiLabelsMandibleCheck = new QCheckBox(tr("Lower FDI Labels"));
+    m_fdiLabelsMandibleCheck->setChecked(true);
+    m_fdiLabelsMandibleCheck->setToolTip(tr("Show FDI numbers on lower jaw teeth (31-38, 41-48)"));
+    connect(m_fdiLabelsMandibleCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMandibleFDILabelsVisible(checked);
+    });
+    biteLayout->addWidget(m_fdiLabelsMandibleCheck);
+
     // Separator
     QFrame* line1 = new QFrame();
     line1->setFrameShape(QFrame::HLine);
@@ -500,6 +532,10 @@ void MainWindow::setupToolBar()
     loadBiteAction->setToolTip(tr("Load upper and lower jaw meshes"));
     connect(loadBiteAction, &QAction::triggered, this, &MainWindow::loadBiteData);
 
+    QAction* aiSegmentAction = toolbar->addAction(tr("AI Segment"));
+    aiSegmentAction->setToolTip(tr("Run AI tooth segmentation on loaded jaws"));
+    connect(aiSegmentAction, &QAction::triggered, this, &MainWindow::runBiteSegmentation);
+
     toolbar->addSeparator();
 
     QAction* quickBiteAction = toolbar->addAction(tr("Quick Bite"));
@@ -631,6 +667,74 @@ void MainWindow::onSegmentationFinished(bool success, const QString& outputPath)
 void MainWindow::onSegmentationProgress(const QString& message)
 {
     m_statusLabel->setText(message);
+}
+
+void MainWindow::runBiteSegmentation()
+{
+    if (m_maxillaPath.isEmpty() || m_mandiblePath.isEmpty()) {
+        QMessageBox::warning(this, tr("Error"), tr("Please load bite data first."));
+        return;
+    }
+
+    m_statusLabel->setText(tr("Segmenting upper jaw (maxilla)..."));
+    m_progressBar->setVisible(true);
+    m_progressBar->setRange(0, 0);
+
+    m_biteSegState = BiteSegState::SegmentingMaxilla;
+
+    QFileInfo fi(m_maxillaPath);
+    QString outputPath = fi.absolutePath() + "/" + fi.baseName() + "_segmented.ply";
+
+    disconnect(m_segmentation, &Segmentation::segmentationFinished, this, &MainWindow::onSegmentationFinished);
+    connect(m_segmentation, &Segmentation::segmentationFinished, this, &MainWindow::onBiteSegmentationStep, Qt::UniqueConnection);
+
+    m_segmentation->runSegmentationAsync(m_maxillaPath, outputPath, true);
+}
+
+void MainWindow::onBiteSegmentationStep()
+{
+    if (m_biteSegState == BiteSegState::SegmentingMaxilla) {
+        m_statusLabel->setText(tr("Maxilla done! Starting mandible..."));
+        m_biteSegState = BiteSegState::SegmentingMandible;
+
+        QFileInfo fiMand(m_mandiblePath);
+        QString outputPath = fiMand.absolutePath() + "/" + fiMand.baseName() + "_segmented.ply";
+
+        // 딜레이 후 다음 세그먼테이션 시작 (시그널 핸들러에서 바로 하면 크래시)
+        QTimer::singleShot(100, this, [this, outputPath]() {
+            m_segmentation->runSegmentationAsync(m_mandiblePath, outputPath, false);
+        });
+
+    } else if (m_biteSegState == BiteSegState::SegmentingMandible) {
+        m_statusLabel->setText(tr("Segmentation complete!"));
+        m_biteSegState = BiteSegState::Done;
+        m_progressBar->setVisible(false);
+
+        disconnect(m_segmentation, &Segmentation::segmentationFinished, this, &MainWindow::onBiteSegmentationStep);
+        connect(m_segmentation, &Segmentation::segmentationFinished, this, &MainWindow::onSegmentationFinished);
+
+        // 딜레이 후 상/하악 결과 모두 로드
+        QTimer::singleShot(200, this, [this]() {
+            // 상악 세그먼테이션 로드
+            QFileInfo fiMax(m_maxillaPath);
+            QString maxSegPath = fiMax.absolutePath() + "/" + fiMax.baseName() + "_segmented.ply";
+            auto maxSeg = MeshLoader::load(maxSegPath.toStdString());
+            if (maxSeg) {
+                m_glWidget->loadMaxillaSegmentation(std::move(maxSeg));
+            }
+
+            // 하악 세그먼테이션 로드
+            QFileInfo fiMand(m_mandiblePath);
+            QString mandSegPath = fiMand.absolutePath() + "/" + fiMand.baseName() + "_segmented.ply";
+            auto mandSeg = MeshLoader::load(mandSegPath.toStdString());
+            if (mandSeg) {
+                m_glWidget->loadMandibleSegmentation(std::move(mandSeg));
+            }
+
+            m_statusLabel->setText(tr("Segmentation complete! (Upper & Lower)"));
+            updateMetricsDisplay();
+        });
+    }
 }
 
 void MainWindow::createLabelCheckboxes()

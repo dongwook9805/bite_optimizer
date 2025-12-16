@@ -155,9 +155,21 @@ def demo_segment(input_path, output_path, num_points=32000):
 
 def segment_with_ai(input_path, output_path, model_path, num_points=32000, is_upper=True):
     """Run AI segmentation on mesh file"""
-    device = torch.device("cpu")
+    # Apple Silicon MPS 가속 시도
+    if torch.backends.mps.is_available():
+        device = torch.device("mps")
+        print("Using Apple MPS acceleration", flush=True)
+        MAX_POINTS = 16000  # MPS는 더 많이 처리 가능
+    else:
+        device = torch.device("cpu")
+        print("Using CPU (slower)", flush=True)
+        MAX_POINTS = 6000  # CPU는 더 작게
 
-    print(f"Loading model from {model_path}...")
+    if num_points > MAX_POINTS:
+        print(f"Reducing points: {num_points} → {MAX_POINTS}", flush=True)
+        num_points = MAX_POINTS
+
+    print(f"Loading model from {model_path}...", flush=True)
     model = PointTransformerSeg38(
         in_channels=6,
         num_classes=17 + 2,
