@@ -16,6 +16,7 @@ GLWidget::GLWidget(QWidget* parent)
     , m_mandibleEbo(QOpenGLBuffer::IndexBuffer)
     , m_contactVbo(QOpenGLBuffer::VertexBuffer)
     , m_landmarkVbo(QOpenGLBuffer::VertexBuffer)
+    , m_toothAxisVbo(QOpenGLBuffer::VertexBuffer)
 {
     setFocusPolicy(Qt::StrongFocus);
 
@@ -47,6 +48,8 @@ GLWidget::~GLWidget()
     m_contactVbo.destroy();
     m_landmarkVao.destroy();
     m_landmarkVbo.destroy();
+    m_toothAxisVao.destroy();
+    m_toothAxisVbo.destroy();
     delete m_shaderProgram;
     doneCurrent();
 }
@@ -94,6 +97,10 @@ void GLWidget::initializeGL()
     // Create landmark VAO/VBO
     m_landmarkVao.create();
     m_landmarkVbo.create();
+
+    // Create tooth axis VAO/VBO
+    m_toothAxisVao.create();
+    m_toothAxisVbo.create();
 }
 
 void GLWidget::setupShaders()
@@ -307,6 +314,32 @@ void GLWidget::paintGL()
         glEnable(GL_CULL_FACE);
     }
 
+    // Draw tooth axes (PCA long axes)
+    if ((m_toothAxesMaxillaVisible || m_toothAxesMandibleVisible) && m_toothAxisVertexCount > 0) {
+        m_shaderProgram->setUniformValue("isPointCloud", true);  // Use point cloud shader (no lighting)
+
+        glDisable(GL_CULL_FACE);
+        glLineWidth(3.0f);  // Thicker lines for visibility
+
+        m_toothAxisVao.bind();
+
+        // Draw axes based on visibility settings
+        // Since we interleave maxilla and mandible axes, we draw all and filter by color
+        // Or we can draw selectively by counting axes
+        int vertexIndex = 0;
+        for (const auto& axis : m_toothAxes) {
+            if ((axis.isMaxilla && m_toothAxesMaxillaVisible) ||
+                (!axis.isMaxilla && m_toothAxesMandibleVisible)) {
+                glDrawArrays(GL_LINES, vertexIndex, 2);
+            }
+            vertexIndex += 2;
+        }
+
+        m_toothAxisVao.release();
+        glLineWidth(1.0f);
+        glEnable(GL_CULL_FACE);
+    }
+
     m_shaderProgram->release();
 }
 
@@ -403,6 +436,9 @@ void GLWidget::loadMaxillaSegmentation(std::unique_ptr<Mesh> segPoints)
     // Update tooth centroids for FDI labels
     updateToothCentroids();
 
+    // Update tooth axes for PCA visualization
+    updateToothAxes();
+
     update();
 }
 
@@ -434,6 +470,9 @@ void GLWidget::loadMandibleSegmentation(std::unique_ptr<Mesh> segPoints)
 
     // Update tooth centroids for FDI labels
     updateToothCentroids();
+
+    // Update tooth axes for PCA visualization
+    updateToothAxes();
 
     update();
 }
@@ -467,6 +506,156 @@ void GLWidget::setMandibleFDILabelsVisible(bool visible)
 {
     m_fdiLabelsMandibleVisible = visible;
     update();
+}
+
+void GLWidget::setMaxillaAxesVisible(bool visible)
+{
+    m_toothAxesMaxillaVisible = visible;
+    update();
+}
+
+void GLWidget::setMandibleAxesVisible(bool visible)
+{
+    m_toothAxesMandibleVisible = visible;
+    update();
+}
+
+void GLWidget::updateToothAxes()
+{
+    m_toothAxes.clear();
+
+    // Calculate from maxilla segmentation
+    if (m_maxillaSeg && m_maxillaSeg->hasLabels()) {
+        calculateToothAxesFromMesh(m_maxillaSeg.get(), true);
+    }
+
+    // Calculate from mandible segmentation
+    if (m_mandibleSeg && m_mandibleSeg->hasLabels()) {
+        calculateToothAxesFromMesh(m_mandibleSeg.get(), false);
+    }
+
+    updateToothAxisBuffers();
+    update();
+}
+
+void GLWidget::calculateToothAxesFromMesh(Mesh* mesh, bool isMaxilla)
+{
+    if (!mesh || !mesh->hasLabels()) return;
+
+    const auto& vertices = mesh->vertices();
+    const auto& labels = mesh->labels();
+
+    // Group vertices by label
+    std::map<int, std::vector<Eigen::Vector3f>> labelPoints;
+
+    for (size_t i = 0; i < vertices.size() && i < labels.size(); ++i) {
+        int label = labels[i];
+        if (label >= 1 && label <= 16) {  // Only teeth (skip gingiva label 0)
+            labelPoints[label].push_back(vertices[i].position);
+        }
+    }
+
+    // Calculate PCA for each tooth
+    for (const auto& [label, points] : labelPoints) {
+        if (points.size() < 3) continue;  // Need at least 3 points for PCA
+
+        // 1. Calculate centroid
+        Eigen::Vector3f centroid = Eigen::Vector3f::Zero();
+        for (const auto& p : points) {
+            centroid += p;
+        }
+        centroid /= static_cast<float>(points.size());
+
+        // 2. Build covariance matrix
+        Eigen::Matrix3f covariance = Eigen::Matrix3f::Zero();
+        for (const auto& p : points) {
+            Eigen::Vector3f diff = p - centroid;
+            covariance += diff * diff.transpose();
+        }
+        covariance /= static_cast<float>(points.size());
+
+        // 3. SVD to get principal components
+        Eigen::JacobiSVD<Eigen::Matrix3f> svd(covariance, Eigen::ComputeFullU);
+        Eigen::Vector3f pc1 = svd.matrixU().col(0);  // First principal component (longest axis)
+
+        // Store axis data
+        ToothAxis axis;
+        axis.position = centroid;
+        axis.direction = pc1.normalized();
+        axis.fdiNumber = segLabelToFDI(label, isMaxilla);
+        axis.isMaxilla = isMaxilla;
+
+        m_toothAxes.push_back(axis);
+    }
+
+    std::cout << "Calculated " << m_toothAxes.size() << " tooth axes for "
+              << (isMaxilla ? "maxilla" : "mandible") << std::endl;
+}
+
+void GLWidget::updateToothAxisBuffers()
+{
+    if (m_toothAxes.empty()) {
+        m_toothAxisVertexCount = 0;
+        return;
+    }
+
+    makeCurrent();
+    m_toothAxisVao.bind();
+
+    // Build vertex buffer: position (3) + normal (3) + color (3) per vertex
+    // 2 vertices per line (start and end)
+    std::vector<float> vertexData;
+    vertexData.reserve(m_toothAxes.size() * 2 * 9);
+
+    const float axisHalfLength = 5.0f;  // 5mm each direction = 10mm total
+
+    for (const auto& axis : m_toothAxes) {
+        // Line start (centroid - direction * halfLength)
+        Eigen::Vector3f start = axis.position - axis.direction * axisHalfLength;
+        // Line end (centroid + direction * halfLength)
+        Eigen::Vector3f end = axis.position + axis.direction * axisHalfLength;
+
+        // Color: cyan for maxilla, magenta for mandible
+        Eigen::Vector3f color = axis.isMaxilla ? Eigen::Vector3f(0.0f, 1.0f, 1.0f)  // Cyan
+                                               : Eigen::Vector3f(1.0f, 0.0f, 1.0f); // Magenta
+
+        // Start vertex
+        vertexData.push_back(start.x());
+        vertexData.push_back(start.y());
+        vertexData.push_back(start.z());
+        vertexData.push_back(0.0f);  // Normal (dummy)
+        vertexData.push_back(0.0f);
+        vertexData.push_back(1.0f);
+        vertexData.push_back(color.x());
+        vertexData.push_back(color.y());
+        vertexData.push_back(color.z());
+
+        // End vertex
+        vertexData.push_back(end.x());
+        vertexData.push_back(end.y());
+        vertexData.push_back(end.z());
+        vertexData.push_back(0.0f);  // Normal (dummy)
+        vertexData.push_back(0.0f);
+        vertexData.push_back(1.0f);
+        vertexData.push_back(color.x());
+        vertexData.push_back(color.y());
+        vertexData.push_back(color.z());
+    }
+
+    m_toothAxisVbo.bind();
+    m_toothAxisVbo.allocate(vertexData.data(), vertexData.size() * sizeof(float));
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    m_toothAxisVertexCount = m_toothAxes.size() * 2;  // 2 vertices per axis
+
+    m_toothAxisVao.release();
+    doneCurrent();
 }
 
 int GLWidget::segLabelToFDI(int segLabel, bool isMaxilla)

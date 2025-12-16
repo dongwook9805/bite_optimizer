@@ -132,6 +132,8 @@ private:
     QCheckBox* m_mandibleSegCheck;
     QCheckBox* m_fdiLabelsMaxillaCheck;
     QCheckBox* m_fdiLabelsMandibleCheck;
+    QCheckBox* m_toothAxesMaxillaCheck;
+    QCheckBox* m_toothAxesMandibleCheck;
 
     // Bite optimization UI elements
     QPushButton* m_roughAlignBtn;

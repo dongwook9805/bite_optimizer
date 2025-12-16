@@ -170,6 +170,23 @@ void MainWindow::setupSidePanel()
     });
     biteLayout->addWidget(m_fdiLabelsMandibleCheck);
 
+    // Tooth Axis checkboxes (PCA long axis visualization)
+    m_toothAxesMaxillaCheck = new QCheckBox(tr("Upper Tooth Axes"));
+    m_toothAxesMaxillaCheck->setChecked(true);
+    m_toothAxesMaxillaCheck->setToolTip(tr("Show PCA-based long axes for upper jaw teeth (cyan)"));
+    connect(m_toothAxesMaxillaCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMaxillaAxesVisible(checked);
+    });
+    biteLayout->addWidget(m_toothAxesMaxillaCheck);
+
+    m_toothAxesMandibleCheck = new QCheckBox(tr("Lower Tooth Axes"));
+    m_toothAxesMandibleCheck->setChecked(true);
+    m_toothAxesMandibleCheck->setToolTip(tr("Show PCA-based long axes for lower jaw teeth (magenta)"));
+    connect(m_toothAxesMandibleCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_glWidget->setMandibleAxesVisible(checked);
+    });
+    biteLayout->addWidget(m_toothAxesMandibleCheck);
+
     // Separator
     QFrame* line1 = new QFrame();
     line1->setFrameShape(QFrame::HLine);

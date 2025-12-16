@@ -23,6 +23,14 @@ struct ToothCentroid {
     bool isMaxilla;
 };
 
+// Tooth axis for long axis visualization (PCA)
+struct ToothAxis {
+    Eigen::Vector3f position;    // Centroid (axis origin)
+    Eigen::Vector3f direction;   // PC1 direction (normalized)
+    int fdiNumber;
+    bool isMaxilla;
+};
+
 // Landmark for alignment
 struct Landmark {
     Eigen::Vector3f position;
@@ -56,6 +64,13 @@ public:
     bool isMaxillaFDILabelsVisible() const { return m_fdiLabelsMaxillaVisible; }
     bool isMandibleFDILabelsVisible() const { return m_fdiLabelsMandibleVisible; }
     void updateToothCentroids();
+
+    // Tooth axis display (PCA)
+    void setMaxillaAxesVisible(bool visible);
+    void setMandibleAxesVisible(bool visible);
+    bool isMaxillaAxesVisible() const { return m_toothAxesMaxillaVisible; }
+    bool isMandibleAxesVisible() const { return m_toothAxesMandibleVisible; }
+    void updateToothAxes();
 
     // Bite optimization: dual mesh support
     void loadMaxilla(std::unique_ptr<Mesh> maxilla);
@@ -144,6 +159,10 @@ private:
     int segLabelToFDI(int segLabel, bool isMaxilla);
     void calculateToothCentroidsFromMesh(Mesh* mesh, bool isMaxilla);
 
+    // Tooth axis helpers (PCA)
+    void calculateToothAxesFromMesh(Mesh* mesh, bool isMaxilla);
+    void updateToothAxisBuffers();
+
     // Mesh data (original mesh)
     std::unique_ptr<Mesh> m_mesh;
     // Point cloud data (segmentation result)
@@ -190,6 +209,14 @@ private:
     std::vector<ToothCentroid> m_toothCentroids;
     bool m_fdiLabelsMaxillaVisible = true;
     bool m_fdiLabelsMandibleVisible = true;
+
+    // Tooth axis display (PCA)
+    std::vector<ToothAxis> m_toothAxes;
+    QOpenGLVertexArrayObject m_toothAxisVao;
+    QOpenGLBuffer m_toothAxisVbo;
+    int m_toothAxisVertexCount = 0;
+    bool m_toothAxesMaxillaVisible = true;
+    bool m_toothAxesMandibleVisible = true;
 
     // OpenGL objects for contact points
     QOpenGLVertexArrayObject m_contactVao;
