@@ -84,15 +84,16 @@ class pointops:
             else:
                 # FPS algorithm
                 centroids = torch.zeros(n_sample, dtype=torch.long, device=device)
-                distance = torch.ones(n, device=device) * 1e10
-                farthest = torch.randint(0, n, (1,), device=device).item()
+                distance = torch.full((n,), float('inf'), device=device)
+                # Start from the first point (deterministic for reproducibility)
+                # Using randint causes different results each run
+                farthest = 0
 
                 for i in range(n_sample):
                     centroids[i] = farthest
-                    centroid = points[farthest].unsqueeze(0)
+                    centroid = points[farthest:farthest+1]  # (1, 3)
                     dist = torch.sum((points - centroid) ** 2, dim=1)
-                    mask = dist < distance
-                    distance[mask] = dist[mask]
+                    distance = torch.minimum(distance, dist)
                     farthest = torch.argmax(distance).item()
 
                 indices = centroids + start

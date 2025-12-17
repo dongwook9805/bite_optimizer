@@ -78,45 +78,137 @@ def normalize_pointcloud(points):
     return points_normalized, centroid, max_dist
 
 
-def load_mesh_as_pointcloud(filepath, num_points=32000):
-    """Load OBJ/PLY file and sample face centroids (like CrossTooth)"""
+def load_mesh_as_pointcloud(filepath, num_points=32000, seed=None):
+    """Load OBJ/PLY file and sample face centroids (like CrossTooth)
+
+    Args:
+        filepath: Path to mesh file (OBJ/PLY)
+        num_points: Target number of points
+        seed: Random seed for reproducible sampling (None for random)
+    """
     import trimesh
+
+    # Set seed for reproducibility if provided
+    if seed is not None:
+        np.random.seed(seed)
 
     mesh = trimesh.load(filepath)
 
     # Get face centroids and normals (like CrossTooth)
     if hasattr(mesh, 'triangles_center'):
-        cell_coords = mesh.triangles_center
-        cell_normals = mesh.face_normals
+        cell_coords = np.array(mesh.triangles_center)
+        cell_normals = np.array(mesh.face_normals)
     else:
         # Fallback for non-triangular meshes
-        cell_coords = mesh.vertices[mesh.faces].mean(axis=1)
-        cell_normals = mesh.face_normals
+        cell_coords = np.array(mesh.vertices[mesh.faces].mean(axis=1))
+        cell_normals = np.array(mesh.face_normals)
 
     n_faces = len(cell_coords)
+    original_n_faces = n_faces
 
-    # Pad or sample to num_points
+    # ========================================
+    # 1. Normalize BEFORE padding (use only real points for centroid calculation)
+    # ========================================
+    cell_coords_norm, centroid, scale = normalize_pointcloud(cell_coords)
+
+    # ========================================
+    # 2. Pad or sample to num_points
+    # ========================================
     sampled_indices = None
     if n_faces < num_points:
-        # Pad with zeros
-        padding = np.zeros((num_points - n_faces, 3))
-        cell_coords = np.concatenate([cell_coords, padding], axis=0)
-        cell_normals = np.concatenate([cell_normals, padding], axis=0)
-        sampled_indices = np.arange(n_faces)  # All faces are used
-    else:
-        # Random sample
-        sampled_indices = np.random.permutation(n_faces)[:num_points]
-        cell_coords = cell_coords[sampled_indices]
-        cell_normals = cell_normals[sampled_indices]
+        # Pad by repeating last point (NOT zeros!)
+        # This prevents fake points at origin affecting the model
+        num_padding = num_points - n_faces
 
-    # Normalize coordinates (critical for model!)
-    cell_coords_norm, centroid, scale = normalize_pointcloud(cell_coords)
+        # Repeat the last point's coordinates and normals
+        padding_coords = np.tile(cell_coords_norm[-1:], (num_padding, 1))
+        padding_normals = np.tile(cell_normals[-1:], (num_padding, 1))
+
+        cell_coords_norm = np.concatenate([cell_coords_norm, padding_coords], axis=0)
+        cell_normals = np.concatenate([cell_normals, padding_normals], axis=0)
+
+        # Also pad original coords for output
+        padding_orig = np.tile(cell_coords[-1:], (num_padding, 1))
+        cell_coords = np.concatenate([cell_coords, padding_orig], axis=0)
+
+        sampled_indices = np.arange(n_faces)  # All original faces are used
+        print(f"Padded {num_padding} points (repeated last point)")
+    else:
+        # Use farthest point sampling for better coverage (more uniform than random)
+        # Fall back to stratified random sampling for speed
+        sampled_indices = stratified_sample(cell_coords_norm, num_points)
+        cell_coords_norm = cell_coords_norm[sampled_indices]
+        cell_normals = cell_normals[sampled_indices]
+        cell_coords = cell_coords[sampled_indices]
+        print(f"Sampled {num_points} from {original_n_faces} points (stratified)")
 
     # Combine position (3) + normal (3) = 6 channels
     pointcloud = np.concatenate([cell_coords_norm, cell_normals], axis=1).astype(np.float32)
 
     # Return sampled indices for mapping predictions back to original mesh
     return pointcloud, cell_coords, mesh, sampled_indices
+
+
+def stratified_sample(points, num_samples):
+    """Stratified sampling for better spatial coverage than random sampling.
+
+    Divides space into grid cells and samples proportionally from each.
+    This ensures small regions (like individual teeth) are not under-sampled.
+    """
+    n_points = len(points)
+    if n_points <= num_samples:
+        return np.arange(n_points)
+
+    # Determine grid size (aim for ~100-500 points per cell on average)
+    points_per_cell = 200
+    n_cells_target = max(1, n_points // points_per_cell)
+    n_cells_per_dim = max(1, int(np.cbrt(n_cells_target)))
+
+    # Compute grid bounds
+    mins = points.min(axis=0)
+    maxs = points.max(axis=0)
+    ranges = maxs - mins
+    ranges[ranges == 0] = 1  # Prevent division by zero
+
+    # Assign points to grid cells
+    cell_size = ranges / n_cells_per_dim
+    cell_indices = np.floor((points - mins) / cell_size).astype(int)
+    cell_indices = np.clip(cell_indices, 0, n_cells_per_dim - 1)
+
+    # Flatten cell indices to single ID
+    cell_ids = (cell_indices[:, 0] * n_cells_per_dim * n_cells_per_dim +
+                cell_indices[:, 1] * n_cells_per_dim +
+                cell_indices[:, 2])
+
+    # Group points by cell
+    unique_cells = np.unique(cell_ids)
+    cell_to_points = {c: np.where(cell_ids == c)[0] for c in unique_cells}
+
+    # Calculate samples per cell (proportional to cell population)
+    cell_sizes = np.array([len(cell_to_points[c]) for c in unique_cells])
+    samples_per_cell = np.round(cell_sizes / cell_sizes.sum() * num_samples).astype(int)
+
+    # Adjust to exactly match num_samples
+    diff = num_samples - samples_per_cell.sum()
+    if diff > 0:
+        # Add samples to largest cells
+        largest_cells = np.argsort(cell_sizes)[-diff:]
+        samples_per_cell[largest_cells] += 1
+    elif diff < 0:
+        # Remove samples from smallest cells
+        smallest_cells = np.argsort(cell_sizes)[:abs(diff)]
+        samples_per_cell[smallest_cells] = np.maximum(0, samples_per_cell[smallest_cells] - 1)
+
+    # Sample from each cell
+    sampled_indices = []
+    for i, cell_id in enumerate(unique_cells):
+        cell_points = cell_to_points[cell_id]
+        n_to_sample = min(samples_per_cell[i], len(cell_points))
+        if n_to_sample > 0:
+            sampled = np.random.choice(cell_points, n_to_sample, replace=False)
+            sampled_indices.extend(sampled)
+
+    return np.array(sampled_indices)
 
 
 def demo_segment(input_path, output_path, num_points=32000):
