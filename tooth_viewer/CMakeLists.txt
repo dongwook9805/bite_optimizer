@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ToothViewer VERSION 1.0.0 LANGUAGES CXX)
+project(BiteFinder VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,7 +8,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Find Qt6
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets Concurrent)
 
 # Find Eigen3
 find_package(Eigen3 REQUIRED)
@@ -28,6 +28,9 @@ set(SOURCES
     src/MeshLoader.cpp
     src/Segmentation.cpp
     src/BiteSimulator.cpp
+    src/AdamOptimizer.cpp
+    src/RLOptimizer.cpp
+    src/Optimizer.cpp
 )
 
 set(HEADERS
@@ -37,12 +40,9 @@ set(HEADERS
     src/MeshLoader.h
     src/Segmentation.h
     src/BiteSimulator.h
-)
-
-# Shader files as resources
-set(SHADERS
-    shaders/mesh.vert
-    shaders/mesh.frag
+    src/AdamOptimizer.h
+    src/RLOptimizer.h
+    src/Optimizer.h
 )
 
 # Create executable
@@ -55,6 +55,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Widgets
     Qt6::OpenGL
     Qt6::OpenGLWidgets
+    Qt6::Concurrent
     Eigen3::Eigen
 )
 
@@ -68,9 +69,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Copy shaders to build directory
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
 # macOS specific settings
 if(APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
@@ -79,7 +77,7 @@ if(APPLE)
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_GUI_IDENTIFIER com.toothviewer.app
+        MACOSX_BUNDLE_GUI_IDENTIFIER com.bitefinder.app
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         INSTALL_RPATH "@executable_path/../Frameworks"

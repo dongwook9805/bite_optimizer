@@ -1324,16 +1324,35 @@ void GLWidget::updateMaxillaFromSimulator(Mesh* maxilla)
 {
     if (!maxilla || !m_maxilla) return;
 
-    // Copy vertex positions from simulator's maxilla
     auto& verts = const_cast<std::vector<Vertex>&>(m_maxilla->vertices());
     const auto& simVerts = maxilla->vertices();
+    size_t count = std::min(verts.size(), simVerts.size());
 
-    for (size_t i = 0; i < verts.size() && i < simVerts.size(); ++i) {
+    for (size_t i = 0; i < count; ++i) {
         verts[i].position = simVerts[i].position;
         verts[i].normal = simVerts[i].normal;
     }
 
-    updateMaxillaBuffers();
+    makeCurrent();
+    m_maxillaVao.bind();
+    m_maxillaVbo.bind();
+    
+    float* ptr = static_cast<float*>(m_maxillaVbo.map(QOpenGLBuffer::WriteOnly));
+    if (ptr) {
+        for (size_t i = 0; i < count; ++i) {
+            size_t offset = i * 9;
+            ptr[offset + 0] = verts[i].position.x();
+            ptr[offset + 1] = verts[i].position.y();
+            ptr[offset + 2] = verts[i].position.z();
+            ptr[offset + 3] = verts[i].normal.x();
+            ptr[offset + 4] = verts[i].normal.y();
+            ptr[offset + 5] = verts[i].normal.z();
+        }
+        m_maxillaVbo.unmap();
+    }
+    
+    m_maxillaVao.release();
+    doneCurrent();
     update();
 }
 
@@ -1341,16 +1360,35 @@ void GLWidget::updateMandibleFromSimulator(Mesh* mandible)
 {
     if (!mandible || !m_mandible) return;
 
-    // Copy vertex positions from simulator's mandible
     auto& verts = const_cast<std::vector<Vertex>&>(m_mandible->vertices());
     const auto& simVerts = mandible->vertices();
+    size_t count = std::min(verts.size(), simVerts.size());
 
-    for (size_t i = 0; i < verts.size() && i < simVerts.size(); ++i) {
+    for (size_t i = 0; i < count; ++i) {
         verts[i].position = simVerts[i].position;
         verts[i].normal = simVerts[i].normal;
     }
 
-    updateMandibleBuffers();
+    makeCurrent();
+    m_mandibleVao.bind();
+    m_mandibleVbo.bind();
+    
+    float* ptr = static_cast<float*>(m_mandibleVbo.map(QOpenGLBuffer::WriteOnly));
+    if (ptr) {
+        for (size_t i = 0; i < count; ++i) {
+            size_t offset = i * 9;
+            ptr[offset + 0] = verts[i].position.x();
+            ptr[offset + 1] = verts[i].position.y();
+            ptr[offset + 2] = verts[i].position.z();
+            ptr[offset + 3] = verts[i].normal.x();
+            ptr[offset + 4] = verts[i].normal.y();
+            ptr[offset + 5] = verts[i].normal.z();
+        }
+        m_mandibleVbo.unmap();
+    }
+    
+    m_mandibleVao.release();
+    doneCurrent();
     update();
 }
 
@@ -1359,7 +1397,25 @@ void GLWidget::updateMandibleColors(const std::vector<Eigen::Vector3f>& colors)
     if (!m_mandible || colors.empty()) return;
 
     m_mandible->setVertexColors(colors);
-    updateMandibleBuffers();
+    
+    makeCurrent();
+    m_mandibleVao.bind();
+    m_mandibleVbo.bind();
+    
+    float* ptr = static_cast<float*>(m_mandibleVbo.map(QOpenGLBuffer::WriteOnly));
+    if (ptr) {
+        size_t count = std::min(colors.size(), m_mandible->vertexCount());
+        for (size_t i = 0; i < count; ++i) {
+            size_t offset = i * 9 + 6;
+            ptr[offset + 0] = colors[i].x();
+            ptr[offset + 1] = colors[i].y();
+            ptr[offset + 2] = colors[i].z();
+        }
+        m_mandibleVbo.unmap();
+    }
+    
+    m_mandibleVao.release();
+    doneCurrent();
     update();
 }
 

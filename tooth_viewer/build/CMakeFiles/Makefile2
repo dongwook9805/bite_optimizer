@@ -63,11 +63,11 @@ CMAKE_BINARY_DIR = /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/ToothViewer.dir/all
+all: CMakeFiles/BiteFinder.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
-codegen: CMakeFiles/ToothViewer.dir/codegen
+codegen: CMakeFiles/BiteFinder.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -75,107 +75,107 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/ToothViewer.dir/clean
-clean: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/clean
-clean: CMakeFiles/ToothViewer_autogen.dir/clean
+clean: CMakeFiles/BiteFinder.dir/clean
+clean: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/clean
+clean: CMakeFiles/BiteFinder_autogen.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/ToothViewer.dir
+# Target rules for target CMakeFiles/BiteFinder.dir
 
 # All Build rule for target.
-CMakeFiles/ToothViewer.dir/all: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
-CMakeFiles/ToothViewer.dir/all: CMakeFiles/ToothViewer_autogen.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Built target ToothViewer"
-.PHONY : CMakeFiles/ToothViewer.dir/all
+CMakeFiles/BiteFinder.dir/all: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
+CMakeFiles/BiteFinder.dir/all: CMakeFiles/BiteFinder_autogen.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13 "Built target BiteFinder"
+.PHONY : CMakeFiles/BiteFinder.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/ToothViewer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 11
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ToothViewer.dir/all
+CMakeFiles/BiteFinder.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 14
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/BiteFinder.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 0
-.PHONY : CMakeFiles/ToothViewer.dir/rule
+.PHONY : CMakeFiles/BiteFinder.dir/rule
 
 # Convenience name for target.
-ToothViewer: CMakeFiles/ToothViewer.dir/rule
-.PHONY : ToothViewer
+BiteFinder: CMakeFiles/BiteFinder.dir/rule
+.PHONY : BiteFinder
 
 # codegen rule for target.
-CMakeFiles/ToothViewer.dir/codegen: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Finished codegen for target ToothViewer"
-.PHONY : CMakeFiles/ToothViewer.dir/codegen
+CMakeFiles/BiteFinder.dir/codegen: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13 "Finished codegen for target BiteFinder"
+.PHONY : CMakeFiles/BiteFinder.dir/codegen
 
 # clean rule for target.
-CMakeFiles/ToothViewer.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/clean
-.PHONY : CMakeFiles/ToothViewer.dir/clean
+CMakeFiles/BiteFinder.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/clean
+.PHONY : CMakeFiles/BiteFinder.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/ToothViewer_autogen_timestamp_deps.dir
+# Target rules for target CMakeFiles/BiteFinder_autogen_timestamp_deps.dir
 
 # All Build rule for target.
-CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build.make CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build.make CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num= "Built target ToothViewer_autogen_timestamp_deps"
-.PHONY : CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
+CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build.make CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build.make CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num= "Built target BiteFinder_autogen_timestamp_deps"
+.PHONY : CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/rule: cmake_check_build_system
+CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 0
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 0
-.PHONY : CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/rule
+.PHONY : CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/rule
 
 # Convenience name for target.
-ToothViewer_autogen_timestamp_deps: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/rule
-.PHONY : ToothViewer_autogen_timestamp_deps
+BiteFinder_autogen_timestamp_deps: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/rule
+.PHONY : BiteFinder_autogen_timestamp_deps
 
 # codegen rule for target.
-CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/codegen:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build.make CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num= "Finished codegen for target ToothViewer_autogen_timestamp_deps"
-.PHONY : CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/codegen
+CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build.make CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num= "Finished codegen for target BiteFinder_autogen_timestamp_deps"
+.PHONY : CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/codegen
 
 # clean rule for target.
-CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build.make CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/clean
-.PHONY : CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/clean
+CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build.make CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/clean
+.PHONY : CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/ToothViewer_autogen.dir
+# Target rules for target CMakeFiles/BiteFinder_autogen.dir
 
 # All Build rule for target.
-CMakeFiles/ToothViewer_autogen.dir/all: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen.dir/build.make CMakeFiles/ToothViewer_autogen.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen.dir/build.make CMakeFiles/ToothViewer_autogen.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=11 "Built target ToothViewer_autogen"
-.PHONY : CMakeFiles/ToothViewer_autogen.dir/all
+CMakeFiles/BiteFinder_autogen.dir/all: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen.dir/build.make CMakeFiles/BiteFinder_autogen.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen.dir/build.make CMakeFiles/BiteFinder_autogen.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=14 "Built target BiteFinder_autogen"
+.PHONY : CMakeFiles/BiteFinder_autogen.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/ToothViewer_autogen.dir/rule: cmake_check_build_system
+CMakeFiles/BiteFinder_autogen.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 1
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ToothViewer_autogen.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/BiteFinder_autogen.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles 0
-.PHONY : CMakeFiles/ToothViewer_autogen.dir/rule
+.PHONY : CMakeFiles/BiteFinder_autogen.dir/rule
 
 # Convenience name for target.
-ToothViewer_autogen: CMakeFiles/ToothViewer_autogen.dir/rule
-.PHONY : ToothViewer_autogen
+BiteFinder_autogen: CMakeFiles/BiteFinder_autogen.dir/rule
+.PHONY : BiteFinder_autogen
 
 # codegen rule for target.
-CMakeFiles/ToothViewer_autogen.dir/codegen: CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen.dir/build.make CMakeFiles/ToothViewer_autogen.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=11 "Finished codegen for target ToothViewer_autogen"
-.PHONY : CMakeFiles/ToothViewer_autogen.dir/codegen
+CMakeFiles/BiteFinder_autogen.dir/codegen: CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen.dir/build.make CMakeFiles/BiteFinder_autogen.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/lucas.dw.lee/Desktop/bite_optimizer/tooth_viewer/build/CMakeFiles --progress-num=14 "Finished codegen for target BiteFinder_autogen"
+.PHONY : CMakeFiles/BiteFinder_autogen.dir/codegen
 
 # clean rule for target.
-CMakeFiles/ToothViewer_autogen.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen.dir/build.make CMakeFiles/ToothViewer_autogen.dir/clean
-.PHONY : CMakeFiles/ToothViewer_autogen.dir/clean
+CMakeFiles/BiteFinder_autogen.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen.dir/build.make CMakeFiles/BiteFinder_autogen.dir/clean
+.PHONY : CMakeFiles/BiteFinder_autogen.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

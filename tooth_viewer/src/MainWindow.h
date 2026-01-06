@@ -12,11 +12,14 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QDoubleSpinBox>
+#include <QFutureWatcher>
 #include <vector>
 #include <memory>
 #include "GLWidget.h"
 #include "Segmentation.h"
 #include "BiteSimulator.h"
+#include "RLOptimizer.h"
+#include "Optimizer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -42,13 +45,19 @@ private slots:
 
     // Bite Optimization
     void loadBiteData();
-    void roughAlignJaws();    // Rough positioning of jaws
+    void loadExampleData();
+    void roughAlignJaws();
     void runQuickBite();      // Step 2: Quick rough alignment
-    void runOptimizeBite();   // Step 3: RL optimization
-    void stopOptimization();  // Stop button
+    void runOptimizeBite();
+    void stopOptimization();
+    void onOptimizationFinished();
+    void runCEMOptimization();
+    void runESOptimization();
+    void runPPOOptimization();
+    void savePolicyNetwork();
+    void loadPolicyNetwork();
     void resetBiteAlignment();
     void onBiteDataLoaded();
-    void onOptimizationStep();
     void toggleBeforeAfter(bool showAfter);  // Before/After toggle
     void exportAlignedMeshes();
 
@@ -105,10 +114,6 @@ private:
 
     // Bite Optimization
     std::unique_ptr<BiteSimulator> m_biteSimulator;
-    QTimer* m_optimizationTimer = nullptr;
-    int m_optimizationSteps = 0;
-    int m_maxOptimizationSteps = 100;
-    int m_currentPhase = 0;  // 0=none, 1=stabilizing, 2=balancing, 3=fine-tuning
     QString m_maxillaPath;
     QString m_mandiblePath;
     double m_previousReward = 0.0;
@@ -143,6 +148,11 @@ private:
     QPushButton* m_stopBtn;
     QPushButton* m_resetBtn;
     QPushButton* m_exportBtn;
+    QPushButton* m_cemBtn;
+    QPushButton* m_esBtn;
+    QPushButton* m_ppoBtn;
+    QPushButton* m_savePolicyBtn;
+    QPushButton* m_loadPolicyBtn;
     QCheckBox* m_beforeAfterCheck;
     QLabel* m_metricsLabel;
     QLabel* m_phaseLabel;
@@ -179,7 +189,26 @@ private:
     QLabel* m_labelRotZ;
     QCheckBox* m_moveMaxillaCheck;
 
-    std::vector<QCheckBox*> m_labelCheckboxes;  // 0-16 for gingiva + 16 teeth
+    std::vector<QCheckBox*> m_labelCheckboxes;
+    
+    QFutureWatcher<double>* m_optimizationWatcher = nullptr;
+    bool m_optimizationRunning = false;
+    
+    std::unique_ptr<CEMOptimizer> m_cemOptimizer;
+    std::unique_ptr<ESOptimizer> m_esOptimizer;
+    std::unique_ptr<PPOOptimizer> m_ppoOptimizer;
+    
+    std::unique_ptr<GradientOptimizer> m_gradientOptimizer;
+    std::unique_ptr<CEMDirectOptimizer> m_cemDirectOptimizer;
+    std::unique_ptr<MultiStartOptimizer> m_multiStartOptimizer;
+    
+    QTimer* m_optTimer = nullptr;
+    int m_optStep = 0;
+    int m_optStart = 0;
+    double m_optBestReward = 0.0;
+    
+private slots:
+    void runOptimizationStep();
 };
 
 #endif // MAINWINDOW_H

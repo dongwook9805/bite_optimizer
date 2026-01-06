@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "MeshLoader.h"
+#include "RLOptimizer.h"
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -15,6 +16,8 @@
 #include <QScrollArea>
 #include <QApplication>
 #include <QFrame>
+#include <QTimer>
+#include <QtConcurrent/QtConcurrent>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -29,9 +32,6 @@ MainWindow::MainWindow(QWidget* parent)
             this, &MainWindow::onSegmentationProgress);
 
     m_biteSimulator = std::make_unique<BiteSimulator>();
-
-    m_optimizationTimer = new QTimer(this);
-    connect(m_optimizationTimer, &QTimer::timeout, this, &MainWindow::onOptimizationStep);
 
     setupUI();
     setupMenuBar();
@@ -116,277 +116,84 @@ void MainWindow::setupSidePanel()
     mainLayout->addWidget(m_segmentationGroup, 1);
     m_segmentationGroup->hide();
 
-    // ===== Bite Optimization Group (Main UX) =====
-    m_biteGroup = new QGroupBox(tr("Bite Optimization"));
+    m_biteGroup = new QGroupBox(tr("Bite Optimizer"));
     QVBoxLayout* biteLayout = new QVBoxLayout(m_biteGroup);
-    biteLayout->setSpacing(8);
+    biteLayout->setSpacing(6);
 
-    // Visibility toggles
-    m_maxillaVisibleCheck = new QCheckBox(tr("Upper Jaw (Maxilla)"));
+    QHBoxLayout* visLayout = new QHBoxLayout();
+    m_maxillaVisibleCheck = new QCheckBox(tr("Upper"));
     m_maxillaVisibleCheck->setChecked(true);
     connect(m_maxillaVisibleCheck, &QCheckBox::toggled, this, &MainWindow::onMaxillaVisibilityChanged);
-    biteLayout->addWidget(m_maxillaVisibleCheck);
-
-    m_mandibleVisibleCheck = new QCheckBox(tr("Lower Jaw (Mandible)"));
+    visLayout->addWidget(m_maxillaVisibleCheck);
+    m_mandibleVisibleCheck = new QCheckBox(tr("Lower"));
     m_mandibleVisibleCheck->setChecked(true);
     connect(m_mandibleVisibleCheck, &QCheckBox::toggled, this, &MainWindow::onMandibleVisibilityChanged);
-    biteLayout->addWidget(m_mandibleVisibleCheck);
-
-    m_contactPointsCheck = new QCheckBox(tr("Contact Coloring"));
+    visLayout->addWidget(m_mandibleVisibleCheck);
+    m_contactPointsCheck = new QCheckBox(tr("Contact"));
     m_contactPointsCheck->setChecked(true);
-    m_contactPointsCheck->setToolTip(tr("Colors teeth by contact: Green = Good, Red = Penetration, Blue = Far"));
     connect(m_contactPointsCheck, &QCheckBox::toggled, this, &MainWindow::onContactPointsVisibilityChanged);
-    biteLayout->addWidget(m_contactPointsCheck);
+    visLayout->addWidget(m_contactPointsCheck);
+    biteLayout->addLayout(visLayout);
 
-    m_maxillaSegCheck = new QCheckBox(tr("Upper Seg Points"));
-    m_maxillaSegCheck->setChecked(true);
-    m_maxillaSegCheck->setToolTip(tr("Show maxilla segmentation point cloud"));
-    connect(m_maxillaSegCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMaxillaSegVisible(checked);
-    });
-    biteLayout->addWidget(m_maxillaSegCheck);
-
-    m_mandibleSegCheck = new QCheckBox(tr("Lower Seg Points"));
-    m_mandibleSegCheck->setChecked(true);
-    m_mandibleSegCheck->setToolTip(tr("Show mandible segmentation point cloud"));
-    connect(m_mandibleSegCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMandibleSegVisible(checked);
-    });
-    biteLayout->addWidget(m_mandibleSegCheck);
-
-    m_fdiLabelsMaxillaCheck = new QCheckBox(tr("Upper FDI Labels"));
-    m_fdiLabelsMaxillaCheck->setChecked(true);
-    m_fdiLabelsMaxillaCheck->setToolTip(tr("Show FDI numbers on upper jaw teeth (11-18, 21-28)"));
-    connect(m_fdiLabelsMaxillaCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMaxillaFDILabelsVisible(checked);
-    });
-    biteLayout->addWidget(m_fdiLabelsMaxillaCheck);
-
-    m_fdiLabelsMandibleCheck = new QCheckBox(tr("Lower FDI Labels"));
-    m_fdiLabelsMandibleCheck->setChecked(true);
-    m_fdiLabelsMandibleCheck->setToolTip(tr("Show FDI numbers on lower jaw teeth (31-38, 41-48)"));
-    connect(m_fdiLabelsMandibleCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMandibleFDILabelsVisible(checked);
-    });
-    biteLayout->addWidget(m_fdiLabelsMandibleCheck);
-
-    // Tooth Axis checkboxes (PCA long axis visualization)
-    m_toothAxesMaxillaCheck = new QCheckBox(tr("Upper Tooth Axes"));
-    m_toothAxesMaxillaCheck->setChecked(true);
-    m_toothAxesMaxillaCheck->setToolTip(tr("Show PCA-based long axes for upper jaw teeth (cyan)"));
-    connect(m_toothAxesMaxillaCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMaxillaAxesVisible(checked);
-    });
-    biteLayout->addWidget(m_toothAxesMaxillaCheck);
-
-    m_toothAxesMandibleCheck = new QCheckBox(tr("Lower Tooth Axes"));
-    m_toothAxesMandibleCheck->setChecked(true);
-    m_toothAxesMandibleCheck->setToolTip(tr("Show PCA-based long axes for lower jaw teeth (magenta)"));
-    connect(m_toothAxesMandibleCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMandibleAxesVisible(checked);
-    });
-    biteLayout->addWidget(m_toothAxesMandibleCheck);
-
-    // Separator
-    QFrame* line1 = new QFrame();
-    line1->setFrameShape(QFrame::HLine);
-    line1->setFrameShadow(QFrame::Sunken);
-    biteLayout->addWidget(line1);
-
-    // Rough Align button
-    m_roughAlignBtn = new QPushButton(tr("Rough Align"));
-    m_roughAlignBtn->setToolTip(tr("Position mandible below maxilla (use if meshes are overlapping)"));
-    m_roughAlignBtn->setStyleSheet("QPushButton { padding: 6px; }");
-    connect(m_roughAlignBtn, &QPushButton::clicked, this, &MainWindow::roughAlignJaws);
-    biteLayout->addWidget(m_roughAlignBtn);
-
-    // Landmark-based alignment button
-    m_landmarkBtn = new QPushButton(tr("🎯 Pick Landmarks"));
-    m_landmarkBtn->setToolTip(tr("Click matching points on upper and lower jaw for precise alignment"));
-    m_landmarkBtn->setStyleSheet("QPushButton { padding: 6px; background-color: #2196F3; color: white; }");
-    connect(m_landmarkBtn, &QPushButton::clicked, this, &MainWindow::startLandmarkPicking);
-    biteLayout->addWidget(m_landmarkBtn);
-
-    // Landmark picking widget (initially hidden)
-    m_landmarkWidget = new QWidget();
-    QVBoxLayout* landmarkLayout = new QVBoxLayout(m_landmarkWidget);
-    landmarkLayout->setContentsMargins(0, 0, 0, 0);
-    landmarkLayout->setSpacing(4);
-
-    m_landmarkInstructionLabel = new QLabel();
-    m_landmarkInstructionLabel->setWordWrap(true);
-    m_landmarkInstructionLabel->setStyleSheet("QLabel { background-color: #E3F2FD; padding: 8px; border-radius: 4px; }");
-    landmarkLayout->addWidget(m_landmarkInstructionLabel);
-
-    QHBoxLayout* landmarkBtnLayout = new QHBoxLayout();
-    m_landmarkApplyBtn = new QPushButton(tr("Apply Alignment"));
-    m_landmarkApplyBtn->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; }");
-    m_landmarkApplyBtn->setEnabled(false);
-    connect(m_landmarkApplyBtn, &QPushButton::clicked, this, &MainWindow::applyLandmarkAlignment);
-    landmarkBtnLayout->addWidget(m_landmarkApplyBtn);
-
-    m_landmarkCancelBtn = new QPushButton(tr("Cancel"));
-    connect(m_landmarkCancelBtn, &QPushButton::clicked, this, &MainWindow::cancelLandmarkPicking);
-    landmarkBtnLayout->addWidget(m_landmarkCancelBtn);
-
-    landmarkLayout->addLayout(landmarkBtnLayout);
-    m_landmarkWidget->hide();
-    biteLayout->addWidget(m_landmarkWidget);
-
-    // Step 2: Quick Bite (ICP)
-    m_quickBiteBtn = new QPushButton(tr("Quick Bite (Preview)"));
-    m_quickBiteBtn->setToolTip(tr("Fast initial alignment - gets you close"));
-    m_quickBiteBtn->setStyleSheet("QPushButton { padding: 8px; font-weight: bold; }");
-    connect(m_quickBiteBtn, &QPushButton::clicked, this, &MainWindow::runQuickBite);
-    biteLayout->addWidget(m_quickBiteBtn);
-
-    // Step 3: Optimize Bite
-    m_optimizeBtn = new QPushButton(tr("Find Best Occlusion"));
-    m_optimizeBtn->setToolTip(tr("Fine-tune the bite for optimal contact"));
-    m_optimizeBtn->setStyleSheet("QPushButton { padding: 8px; font-weight: bold; background-color: #4CAF50; color: white; }");
+    m_optimizeBtn = new QPushButton(tr("Optimize Bite"));
+    m_optimizeBtn->setStyleSheet("QPushButton { padding: 12px; font-weight: bold; font-size: 14px; background-color: #4CAF50; color: white; }");
     connect(m_optimizeBtn, &QPushButton::clicked, this, &MainWindow::runOptimizeBite);
     biteLayout->addWidget(m_optimizeBtn);
 
-    // Stop button (initially hidden)
-    m_stopBtn = new QPushButton(tr("Stop & Keep Current"));
-    m_stopBtn->setStyleSheet("QPushButton { padding: 6px; background-color: #f44336; color: white; }");
+    m_stopBtn = new QPushButton(tr("Stop"));
+    m_stopBtn->setStyleSheet("QPushButton { padding: 8px; background-color: #f44336; color: white; }");
     m_stopBtn->hide();
     connect(m_stopBtn, &QPushButton::clicked, this, &MainWindow::stopOptimization);
     biteLayout->addWidget(m_stopBtn);
 
-    // Progress bar for optimization
     m_biteProgressBar = new QProgressBar();
     m_biteProgressBar->setTextVisible(true);
     m_biteProgressBar->hide();
     biteLayout->addWidget(m_biteProgressBar);
 
-    // Phase indicators
-    QFrame* phaseFrame = new QFrame();
-    phaseFrame->setFrameShape(QFrame::StyledPanel);
-    QVBoxLayout* phaseLayout = new QVBoxLayout(phaseFrame);
-    phaseLayout->setSpacing(4);
-    phaseLayout->setContentsMargins(8, 8, 8, 8);
-
-    m_phaseLabel = new QLabel(tr("Optimization Phases:"));
-    m_phaseLabel->setStyleSheet("font-weight: bold;");
-    phaseLayout->addWidget(m_phaseLabel);
-
-    m_phase1Label = new QLabel(tr("  Phase 1: Stabilizing contact"));
-    m_phase2Label = new QLabel(tr("  Phase 2: Balancing occlusion"));
-    m_phase3Label = new QLabel(tr("  Phase 3: Fine adjustment"));
-
-    QString inactiveStyle = "color: gray;";
-    m_phase1Label->setStyleSheet(inactiveStyle);
-    m_phase2Label->setStyleSheet(inactiveStyle);
-    m_phase3Label->setStyleSheet(inactiveStyle);
-
-    phaseLayout->addWidget(m_phase1Label);
-    phaseLayout->addWidget(m_phase2Label);
-    phaseLayout->addWidget(m_phase3Label);
-    phaseFrame->hide();
-
-    biteLayout->addWidget(phaseFrame);
-
-    // Separator
-    QFrame* line2 = new QFrame();
-    line2->setFrameShape(QFrame::HLine);
-    line2->setFrameShadow(QFrame::Sunken);
-    biteLayout->addWidget(line2);
-
-    // Reset and Export
     QHBoxLayout* actionLayout = new QHBoxLayout();
-
     m_resetBtn = new QPushButton(tr("Reset"));
-    m_resetBtn->setToolTip(tr("Return to initial position"));
     connect(m_resetBtn, &QPushButton::clicked, this, &MainWindow::resetBiteAlignment);
     actionLayout->addWidget(m_resetBtn);
-
     m_exportBtn = new QPushButton(tr("Export"));
-    m_exportBtn->setToolTip(tr("Save aligned meshes"));
     connect(m_exportBtn, &QPushButton::clicked, this, &MainWindow::exportAlignedMeshes);
     actionLayout->addWidget(m_exportBtn);
-
     biteLayout->addLayout(actionLayout);
 
-    // Before/After toggle
-    m_beforeAfterCheck = new QCheckBox(tr("Show Before State"));
-    m_beforeAfterCheck->setToolTip(tr("Toggle to compare before and after alignment"));
-    connect(m_beforeAfterCheck, &QCheckBox::toggled, this, &MainWindow::toggleBeforeAfter);
-    biteLayout->addWidget(m_beforeAfterCheck);
-
-    // Separator
-    QFrame* line3 = new QFrame();
-    line3->setFrameShape(QFrame::HLine);
-    line3->setFrameShadow(QFrame::Sunken);
-    biteLayout->addWidget(line3);
-
-    // ===== Manual Movement Controls =====
-    m_movementGroup = new QGroupBox(tr("Manual Adjustment"));
-    QVBoxLayout* moveLayout = new QVBoxLayout(m_movementGroup);
-    moveLayout->setSpacing(8);
-
-    // Which jaw to move
-    m_moveMaxillaCheck = new QCheckBox(tr("Move Upper Jaw (Maxilla)"));
-    m_moveMaxillaCheck->setChecked(false);  // Default: move lower jaw
-    m_moveMaxillaCheck->setStyleSheet("font-weight: bold;");
-    connect(m_moveMaxillaCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_glWidget->setMovingMaxilla(checked);
-    });
-    moveLayout->addWidget(m_moveMaxillaCheck);
-
-    // Mouse control instructions (Exocad style)
-    QLabel* instructionLabel = new QLabel(
-        tr("<b>View Controls:</b><br>"
-           "Right-drag = Rotate view<br>"
-           "Left+Right drag = Pan view<br>"
-           "Wheel = Zoom<br>"
-           "Wheel-click = Set pivot<br>"
-           "<br>"
-           "<b>Mesh Controls:</b><br>"
-           "Left-drag = Move jaw<br>"
-           "Ctrl+drag = Rotate jaw"));
-    instructionLabel->setStyleSheet("QLabel { background-color: #f0f0f0; padding: 10px; border-radius: 4px; }");
-    instructionLabel->setWordWrap(true);
-    moveLayout->addWidget(instructionLabel);
-
-    // Initialize slider pointers to nullptr (not used but needed for header compatibility)
-    m_sliderX = nullptr;
-    m_sliderY = nullptr;
-    m_sliderZ = nullptr;
-    m_sliderRotX = nullptr;
-    m_sliderRotY = nullptr;
-    m_sliderRotZ = nullptr;
-    m_labelX = nullptr;
-    m_labelY = nullptr;
-    m_labelZ = nullptr;
-    m_labelRotX = nullptr;
-    m_labelRotY = nullptr;
-    m_labelRotZ = nullptr;
-
-    biteLayout->addWidget(m_movementGroup);
-
-    // Hidden keyboard help (keep for reference)
-    m_keyboardHelpLabel = new QLabel();
-    m_keyboardHelpLabel->hide();
-
-    // Apply button for manual changes
-    m_applyManualBtn = new QPushButton(tr("Calculate Score"));
-    m_applyManualBtn->setToolTip(tr("Calculate occlusion metrics for current position"));
-    m_applyManualBtn->setStyleSheet("QPushButton { padding: 10px; background-color: #2196F3; color: white; font-weight: bold; font-size: 14px; }");
-    connect(m_applyManualBtn, &QPushButton::clicked, this, &MainWindow::applyManualChanges);
-    biteLayout->addWidget(m_applyManualBtn);
-
-    // Separator
-    QFrame* line4 = new QFrame();
-    line4->setFrameShape(QFrame::HLine);
-    line4->setFrameShadow(QFrame::Sunken);
-    biteLayout->addWidget(line4);
-
-    // Metrics display (user-friendly format)
     m_metricsLabel = new QLabel();
     m_metricsLabel->setWordWrap(true);
-    m_metricsLabel->setStyleSheet("QLabel { background-color: #f5f5f5; padding: 8px; border-radius: 4px; }");
+    m_metricsLabel->setStyleSheet("QLabel { background-color: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 12px; }");
     biteLayout->addWidget(m_metricsLabel);
+
+    m_maxillaSegCheck = nullptr;
+    m_mandibleSegCheck = nullptr;
+    m_fdiLabelsMaxillaCheck = nullptr;
+    m_fdiLabelsMandibleCheck = nullptr;
+    m_toothAxesMaxillaCheck = nullptr;
+    m_toothAxesMandibleCheck = nullptr;
+    m_roughAlignBtn = nullptr;
+    m_landmarkBtn = nullptr;
+    m_landmarkWidget = nullptr;
+    m_landmarkInstructionLabel = nullptr;
+    m_landmarkApplyBtn = nullptr;
+    m_landmarkCancelBtn = nullptr;
+    m_quickBiteBtn = nullptr;
+    m_cemBtn = nullptr;
+    m_esBtn = nullptr;
+    m_ppoBtn = nullptr;
+    m_phaseLabel = nullptr;
+    m_phase1Label = nullptr;
+    m_phase2Label = nullptr;
+    m_phase3Label = nullptr;
+    m_beforeAfterCheck = nullptr;
+    m_movementGroup = nullptr;
+    m_moveMaxillaCheck = nullptr;
+    m_keyboardHelpLabel = nullptr;
+    m_applyManualBtn = nullptr;
+    m_sliderX = nullptr; m_sliderY = nullptr; m_sliderZ = nullptr;
+    m_sliderRotX = nullptr; m_sliderRotY = nullptr; m_sliderRotZ = nullptr;
+    m_labelX = nullptr; m_labelY = nullptr; m_labelZ = nullptr;
+    m_labelRotX = nullptr; m_labelRotY = nullptr; m_labelRotZ = nullptr;
 
     mainLayout->addWidget(m_biteGroup);
     m_biteGroup->hide();
@@ -470,12 +277,12 @@ void MainWindow::setupMenuBar()
     exitAction->setShortcut(QKeySequence::Quit);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
-    // AI menu
     QMenu* aiMenu = menuBar()->addMenu(tr("&AI"));
 
-    QAction* segmentAction = aiMenu->addAction(tr("&Tooth Segmentation"));
+    QAction* segmentAction = aiMenu->addAction(tr("&Tooth Segmentation (Unavailable)"));
     segmentAction->setShortcut(Qt::CTRL | Qt::Key_T);
-    connect(segmentAction, &QAction::triggered, this, &MainWindow::runAISegmentation);
+    segmentAction->setEnabled(false);
+    segmentAction->setToolTip(tr("AI segmentation requires Python environment (not installed)"));
 
     aiMenu->addSeparator();
 
@@ -549,9 +356,13 @@ void MainWindow::setupToolBar()
     loadBiteAction->setToolTip(tr("Load upper and lower jaw meshes"));
     connect(loadBiteAction, &QAction::triggered, this, &MainWindow::loadBiteData);
 
+    QAction* loadExampleAction = toolbar->addAction(tr("Example"));
+    loadExampleAction->setToolTip(tr("Load example jaw meshes"));
+    connect(loadExampleAction, &QAction::triggered, this, &MainWindow::loadExampleData);
+
     QAction* aiSegmentAction = toolbar->addAction(tr("AI Segment"));
-    aiSegmentAction->setToolTip(tr("Run AI tooth segmentation on loaded jaws"));
-    connect(aiSegmentAction, &QAction::triggered, this, &MainWindow::runBiteSegmentation);
+    aiSegmentAction->setToolTip(tr("AI segmentation requires Python environment (not installed)"));
+    aiSegmentAction->setEnabled(false);
 
     toolbar->addSeparator();
 
@@ -787,6 +598,56 @@ void MainWindow::createLabelCheckboxes()
 
 // ========== Bite Optimization Methods ==========
 
+void MainWindow::loadExampleData()
+{
+    QString appDir = QCoreApplication::applicationDirPath();
+    
+#ifdef Q_OS_MAC
+    QString assetsDir = appDir + "/../../../../assets";
+#else
+    QString assetsDir = appDir + "/assets";
+#endif
+    
+    QString maxillaPath = assetsDir + "/ZOUIF2W4_upper.obj";
+    QString mandiblePath = assetsDir + "/ZOUIF2W4_lower.obj";
+    
+    if (!QFile::exists(maxillaPath) || !QFile::exists(mandiblePath)) {
+        QMessageBox::warning(this, tr("Error"), 
+            tr("Example files not found.\nExpected at: %1").arg(assetsDir));
+        return;
+    }
+    
+    m_maxillaPath = maxillaPath;
+    m_mandiblePath = mandiblePath;
+    
+    m_statusLabel->setText(tr("Loading example upper jaw..."));
+    QApplication::processEvents();
+    
+    if (!m_biteSimulator->loadMaxilla(maxillaPath.toStdString())) {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load upper jaw mesh."));
+        return;
+    }
+    
+    m_statusLabel->setText(tr("Loading example lower jaw..."));
+    QApplication::processEvents();
+    
+    if (!m_biteSimulator->loadMandible(mandiblePath.toStdString())) {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load lower jaw mesh."));
+        return;
+    }
+    
+    auto maxillaMesh = MeshLoader::load(maxillaPath.toStdString());
+    auto mandibleMesh = MeshLoader::load(mandiblePath.toStdString());
+    
+    if (maxillaMesh && mandibleMesh) {
+        m_glWidget->loadMaxilla(std::move(maxillaMesh));
+        m_glWidget->loadMandible(std::move(mandibleMesh));
+        
+        setWindowTitle(tr("Bite Finder - Example Data"));
+        m_statusLabel->setText(tr("Example loaded - Click 'Optimize' to find best occlusion"));
+    }
+}
+
 void MainWindow::loadBiteData()
 {
     // Step 1: Load Upper Jaw
@@ -921,76 +782,131 @@ void MainWindow::runOptimizeBite()
         return;
     }
 
-    // Store initial state for comparison
-    OrthodonticMetrics metrics = m_biteSimulator->computeMetrics();
-    m_initialReward = m_biteSimulator->computeReward(metrics);
-    m_previousReward = m_initialReward;
-
-    m_optimizationSteps = 0;
-    m_currentPhase = 1;
-
-    // UI state for optimization
-    m_quickBiteBtn->setEnabled(false);
-    m_optimizeBtn->hide();
+    m_optimizeBtn->setEnabled(false);
     m_stopBtn->show();
     m_biteProgressBar->show();
-    m_biteProgressBar->setRange(0, m_maxOptimizationSteps);
+    m_biteProgressBar->setRange(0, 100);
     m_biteProgressBar->setValue(0);
-
-    // Show phase indicators
-    m_phaseLabel->parentWidget()->show();
-    setOptimizationPhase(1);
-
+    m_optimizationRunning = true;
     m_statusLabel->setText(tr("Optimizing..."));
 
-    m_optimizationTimer->start(30);  // 30ms interval for smoother animation
+    m_optStep = 0;
+    m_optBestReward = -999;
+    
+    auto future = QtConcurrent::run([this]() {
+        Eigen::Matrix4f initialTransform = m_biteSimulator->transformMatrix();
+        Eigen::Matrix4f bestTransform = initialTransform;
+        
+        m_biteSimulator->runICPAlignment(15);
+        m_biteSimulator->cacheSamplePoints();
+        m_optBestReward = m_biteSimulator->computeFastReward();
+        bestTransform = m_biteSimulator->transformMatrix();
+        m_optStep = 5;
+        
+        const int numStarts = 5;
+        const int stepsPerStart = 40;
+        
+        for (int start = 0; start < numStarts && m_optimizationRunning; ++start) {
+            m_biteSimulator->reset();
+            m_biteSimulator->setMandibleTransform(bestTransform);
+            
+            if (start > 0) {
+                float rx = (rand() / (float)RAND_MAX - 0.5f) * 4.0f;
+                float ry = (rand() / (float)RAND_MAX - 0.5f) * 4.0f;
+                float rz = (rand() / (float)RAND_MAX - 0.5f) * 4.0f;
+                float tx = (rand() / (float)RAND_MAX - 0.5f) * 2.0f;
+                float ty = (rand() / (float)RAND_MAX - 0.5f) * 2.0f;
+                float tz = (rand() / (float)RAND_MAX - 0.5f) * 1.0f;
+                m_biteSimulator->applyTransform(Eigen::Vector3f(rx, ry, rz), Eigen::Vector3f(tx, ty, tz));
+            }
+            
+            m_biteSimulator->cacheSamplePoints();
+            
+            float lr = 0.15f;
+            for (int i = 0; i < stepsPerStart && m_optimizationRunning; ++i) {
+                if (i > stepsPerStart / 2) lr = 0.05f;
+                double reward = m_biteSimulator->runAdamStep(lr);
+                if (reward > m_optBestReward) {
+                    m_optBestReward = reward;
+                    bestTransform = m_biteSimulator->transformMatrix();
+                }
+                m_optStep = 5 + start * stepsPerStart / numStarts + i * 95 / (numStarts * stepsPerStart);
+            }
+        }
+        
+        m_biteSimulator->reset();
+        m_biteSimulator->setMandibleTransform(bestTransform);
+        m_biteSimulator->cacheSamplePoints();
+        return m_optBestReward;
+    });
+
+    if (!m_optimizationWatcher) {
+        m_optimizationWatcher = new QFutureWatcher<double>(this);
+        connect(m_optimizationWatcher, &QFutureWatcher<double>::finished, this, [this]() {
+            m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
+            m_glWidget->update();
+            onOptimizationFinished();
+        });
+    }
+    m_optimizationWatcher->setFuture(future);
+
+    m_optTimer = new QTimer(this);
+    connect(m_optTimer, &QTimer::timeout, this, [this]() {
+        if (!m_optimizationRunning) {
+            m_optTimer->stop();
+            m_optTimer->deleteLater();
+            m_optTimer = nullptr;
+            return;
+        }
+        m_biteProgressBar->setValue(m_optStep);
+        m_statusLabel->setText(tr("Score: %1%").arg((m_optBestReward + 1.0) / 2.0 * 100.0, 0, 'f', 1));
+    });
+    m_optTimer->start(50);
+}
+
+void MainWindow::runOptimizationStep()
+{
 }
 
 void MainWindow::stopOptimization()
 {
-    m_optimizationTimer->stop();
-
-    // Restore UI
-    m_quickBiteBtn->setEnabled(true);
-    m_optimizeBtn->show();
-    m_stopBtn->hide();
-    m_biteProgressBar->hide();
-    m_currentPhase = 0;
-
-    m_statusLabel->setText(tr("Optimization stopped - current state preserved"));
-    updateMetricsDisplay();
+    if (m_optimizationRunning) {
+        m_optimizationRunning = false;
+        if (m_optTimer) { m_optTimer->stop(); m_optTimer->deleteLater(); m_optTimer = nullptr; }
+        if (m_optimizationWatcher) m_optimizationWatcher->cancel();
+        
+        m_biteSimulator->cancelOptimization();
+        
+        m_quickBiteBtn->setEnabled(true);
+        m_optimizeBtn->setEnabled(true);
+        m_cemBtn->setEnabled(true);
+        m_stopBtn->hide();
+        m_biteProgressBar->hide();
+        
+        m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
+        m_glWidget->update();
+        updateMetricsDisplay();
+        
+        m_statusLabel->setText(tr("Stopped: %1%").arg((m_optBestReward + 1.0) / 2.0 * 100.0, 0, 'f', 1));
+    }
 }
 
-void MainWindow::onOptimizationStep()
+void MainWindow::onOptimizationFinished()
 {
-    if (m_optimizationSteps >= m_maxOptimizationSteps) {
-        stopOptimization();
-        m_statusLabel->setText(tr("Optimization complete!"));
-        return;
-    }
-
-    // Determine phase based on progress
-    int newPhase = 1;
-    if (m_optimizationSteps > m_maxOptimizationSteps * 0.33) newPhase = 2;
-    if (m_optimizationSteps > m_maxOptimizationSteps * 0.66) newPhase = 3;
-
-    if (newPhase != m_currentPhase) {
-        m_currentPhase = newPhase;
-        setOptimizationPhase(newPhase);
-    }
-
-    // Run optimization step
-    m_biteSimulator->optimizeStep(0.01);
-
-    // Update visualization every 3 steps for smooth animation
-    if (m_optimizationSteps % 3 == 0) {
-        m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
-        updateContactPointsVisualization();
-        updateMetricsDisplay();
-    }
-
-    m_optimizationSteps++;
-    m_biteProgressBar->setValue(m_optimizationSteps);
+    m_optimizationRunning = false;
+    m_optimizeBtn->setEnabled(true);
+    m_cemBtn->setEnabled(true);
+    m_stopBtn->hide();
+    m_biteProgressBar->hide();
+    
+    m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
+    updateContactPointsVisualization();
+    updateMetricsDisplay();
+    
+    double improvement = m_optBestReward - m_initialReward;
+    m_statusLabel->setText(tr("Optimization complete! Score: %1% (improvement: %2%)")
+        .arg((m_optBestReward + 1.0) / 2.0 * 100.0, 0, 'f', 1)
+        .arg(improvement * 50.0, 0, 'f', 1));
 }
 
 void MainWindow::setOptimizationPhase(int phase)
@@ -1077,99 +993,35 @@ void MainWindow::exportAlignedMeshes()
 void MainWindow::updateMetricsDisplay()
 {
     if (!m_biteSimulator->maxilla() || !m_biteSimulator->mandible()) {
-        m_metricsLabel->setText(tr("Load bite data to see metrics"));
+        m_metricsLabel->setText(tr("Load data to see metrics"));
         return;
     }
 
-    OrthodonticMetrics metrics = m_biteSimulator->computeMetrics();
-    double reward = m_biteSimulator->computeReward(metrics);
+    OrthodonticMetrics m = m_biteSimulator->computeMetrics();
+    double score = (m_biteSimulator->computeReward(m) + 1.0) / 2.0 * 100.0;
 
-    // === 제1원칙: 상호 보호 교합 ===
-    QString protectionStatus;
-    QString protectionColor;
-    if (metrics.protection_ratio >= 0.90) {
-        protectionStatus = "Excellent";
-        protectionColor = "#4CAF50";  // Green
-    } else if (metrics.protection_ratio >= 0.70) {
-        protectionStatus = "Good";
-        protectionColor = "#FFC107";  // Yellow
-    } else {
-        protectionStatus = "Poor";
-        protectionColor = "#F44336";  // Red
-    }
-
-    // === 제2원칙: 좌우 균형 ===
-    QString balanceStatus;
-    QString balanceColor;
-    if (metrics.balance_error < 0.15) {
-        balanceStatus = "Balanced";
-        balanceColor = "#4CAF50";
-    } else if (metrics.balance_error < 0.30) {
-        balanceStatus = "Slight Imbalance";
-        balanceColor = "#FFC107";
-    } else {
-        balanceStatus = "Uneven";
-        balanceColor = "#F44336";
-    }
-
-    // === 제3원칙: 치축 방향 ===
-    QString axialStatus;
-    QString axialColor;
-    if (metrics.axial_alignment_score >= 0.8 && metrics.lateral_force_penalty < 0.2) {
-        axialStatus = "Vertical";
-        axialColor = "#4CAF50";
-    } else if (metrics.lateral_force_penalty < 0.4) {
-        axialStatus = "Acceptable";
-        axialColor = "#FFC107";
-    } else {
-        axialStatus = "Lateral Force!";
-        axialColor = "#F44336";
-    }
-
-    // Score change indicator
-    QString scoreChange;
-    double delta = reward - m_previousReward;
-    if (std::abs(delta) > 0.001) {
-        scoreChange = QString(" (%1%2)").arg(delta > 0 ? "+" : "").arg(delta, 0, 'f', 3);
-    }
-    m_previousReward = reward;
-
-    // Convert score to percentage (0-100)
-    double scorePercent = (reward + 1.0) / 2.0 * 100.0;
-
+    QString scoreColor = score >= 70 ? "#4CAF50" : (score >= 50 ? "#FFC107" : "#F44336");
+    
     QString text = QString(
-        "<b style='font-size:14px;'>Occlusion Score: %1%%2</b><br><br>"
-        "<b>1. Molar Protection:</b> <span style='color:%3'>%4</span><br>"
-        "   Post/Total: %5%<br><br>"
-        "<b>2. L/R Balance:</b> <span style='color:%6'>%7</span><br>"
-        "   L:%8 R:%9<br><br>"
-        "<b>3. Axial Load:</b> <span style='color:%10'>%11</span><br>"
-        "   Vertical: %12%<br><br>"
-        "<b>4. Distribution:</b> %13%<br><br>"
-        "<small>Contacts: %14 | Penetration: %15</small>")
-        .arg(scorePercent, 0, 'f', 1)
-        .arg(scoreChange)
-        .arg(protectionColor)
-        .arg(protectionStatus)
-        .arg(metrics.protection_ratio * 100, 0, 'f', 0)
-        .arg(balanceColor)
-        .arg(balanceStatus)
-        .arg(metrics.force_left, 0, 'f', 1)
-        .arg(metrics.force_right, 0, 'f', 1)
-        .arg(axialColor)
-        .arg(axialStatus)
-        .arg(metrics.axial_alignment_score * 100, 0, 'f', 0)
-        .arg(metrics.contact_evenness * 100, 0, 'f', 0)
-        .arg(metrics.contact_point_count)
-        .arg(static_cast<int>(metrics.penetration_count));
+        "<div style='text-align:center;'>"
+        "<span style='font-size:24px; font-weight:bold; color:%1;'>%2%</span><br>"
+        "<span style='color:gray;'>Occlusion Score</span></div><br>"
+        "<table width='100%'>"
+        "<tr><td>Contacts</td><td align='right'><b>%3</b></td></tr>"
+        "<tr><td>Penetration</td><td align='right' style='color:%4;'><b>%5</b></td></tr>"
+        "<tr><td>L/R Balance</td><td align='right'>%6 / %7</td></tr>"
+        "<tr><td>Molar Load</td><td align='right'>%8%</td></tr>"
+        "</table>")
+        .arg(scoreColor)
+        .arg(score, 0, 'f', 1)
+        .arg(m.contact_point_count)
+        .arg(m.penetration_count > 10 ? "#F44336" : "#4CAF50")
+        .arg(static_cast<int>(m.penetration_count))
+        .arg(m.force_left, 0, 'f', 1)
+        .arg(m.force_right, 0, 'f', 1)
+        .arg(m.protection_ratio * 100, 0, 'f', 0);
 
     m_metricsLabel->setText(text);
-}
-
-void MainWindow::updatePhaseDisplay()
-{
-    // Called when phase changes during optimization
-    setOptimizationPhase(m_currentPhase);
 }
 
 void MainWindow::onMaxillaVisibilityChanged(bool visible)
@@ -1376,88 +1228,106 @@ void MainWindow::applyManualChanges()
 
 void MainWindow::onSliderMoved()
 {
-    if (!m_biteSimulator->maxilla() || !m_biteSimulator->mandible()) return;
-
-    // Get translation slider values (0.1mm units)
-    float dx = m_sliderX->value() * 0.1f;
-    float dy = m_sliderY->value() * 0.1f;
-    float dz = m_sliderZ->value() * 0.1f;
-
-    // Get rotation slider values (0.1° units)
-    float rx = m_sliderRotX->value() * 0.1f;
-    float ry = m_sliderRotY->value() * 0.1f;
-    float rz = m_sliderRotZ->value() * 0.1f;
-
-    // Update translation labels
-    m_labelX->setText(QString::number(dx, 'f', 1));
-    m_labelY->setText(QString::number(dy, 'f', 1));
-    m_labelZ->setText(QString::number(dz, 'f', 1));
-
-    // Update rotation labels
-    m_labelRotX->setText(QString::number(rx, 'f', 1));
-    m_labelRotY->setText(QString::number(ry, 'f', 1));
-    m_labelRotZ->setText(QString::number(rz, 'f', 1));
-
-    // Track previous values to compute deltas
-    static float lastX = 0, lastY = 0, lastZ = 0;
-    static float lastRX = 0, lastRY = 0, lastRZ = 0;
-
-    float deltaX = dx - lastX;
-    float deltaY = dy - lastY;
-    float deltaZ = dz - lastZ;
-    float deltaRX = rx - lastRX;
-    float deltaRY = ry - lastRY;
-    float deltaRZ = rz - lastRZ;
-
-    lastX = dx; lastY = dy; lastZ = dz;
-    lastRX = rx; lastRY = ry; lastRZ = rz;
-
-    bool hasTranslation = std::abs(deltaX) > 0.001f || std::abs(deltaY) > 0.001f || std::abs(deltaZ) > 0.001f;
-    bool hasRotation = std::abs(deltaRX) > 0.001f || std::abs(deltaRY) > 0.001f || std::abs(deltaRZ) > 0.001f;
-
-    if (hasTranslation || hasRotation) {
-        Eigen::Vector3f translation(deltaX, deltaY, deltaZ);
-        Eigen::Vector3f rotation(deltaRX, deltaRY, deltaRZ);
-        m_biteSimulator->applyTransform(rotation, translation, m_moveMaxillaCheck->isChecked());
-
-        // Update visualization
-        if (m_moveMaxillaCheck->isChecked()) {
-            m_glWidget->updateMaxillaFromSimulator(m_biteSimulator->maxilla());
-        } else {
-            m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
-        }
-
-        m_statusLabel->setText(tr("Pos: %.1f, %.1f, %.1f mm | Rot: %.1f, %.1f, %.1f deg")
-            .arg(dx).arg(dy).arg(dz).arg(rx).arg(ry).arg(rz));
-    }
 }
 
 void MainWindow::moveJawByStep(int axis, float amount)
 {
-    if (!m_biteSimulator->maxilla() || !m_biteSimulator->mandible()) return;
+    Q_UNUSED(axis);
+    Q_UNUSED(amount);
+}
 
-    // Update the appropriate slider
-    QSlider* slider = nullptr;
-    bool isRotation = false;
-
-    switch (axis) {
-        // Translation (mm)
-        case 0: slider = m_sliderX; break;
-        case 1: slider = m_sliderY; break;
-        case 2: slider = m_sliderZ; break;
-        // Rotation (degrees)
-        case 3: slider = m_sliderRotX; isRotation = true; break;
-        case 4: slider = m_sliderRotY; isRotation = true; break;
-        case 5: slider = m_sliderRotZ; isRotation = true; break;
-        default: return;
+void MainWindow::runCEMOptimization()
+{
+    if (!m_biteSimulator->maxilla() || !m_biteSimulator->mandible()) {
+        QMessageBox::warning(this, tr("No Data"), tr("Load bite data first."));
+        return;
     }
 
-    // Convert amount to slider units
-    // Translation: 0.1mm per unit, Rotation: 0.1° per unit
-    int delta = static_cast<int>(amount * 10);
-    int newValue = slider->value() + delta;
-    newValue = qBound(slider->minimum(), newValue, slider->maximum());
-    slider->setValue(newValue);
+    m_initialReward = m_biteSimulator->computeFastReward();
+    m_optBestReward = m_initialReward;
 
-    // onSliderMoved will be called automatically
+    m_optimizationRunning = true;
+    m_optimizeBtn->setEnabled(false);
+    m_cemBtn->setEnabled(false);
+    m_stopBtn->show();
+    m_biteProgressBar->show();
+    m_biteProgressBar->setRange(0, 100);
+    m_biteProgressBar->setValue(0);
+    m_statusLabel->setText(tr("CEM Optimizing..."));
+    m_biteSimulator->cacheSamplePoints();
+
+    m_optStep = 0;
+    auto future = QtConcurrent::run([this]() {
+        for (int i = 0; i < 30 && m_optimizationRunning; ++i) {
+            double reward = m_biteSimulator->runAdamStep(0.08f);
+            if (reward > m_optBestReward) m_optBestReward = reward;
+            m_optStep = i + 1;
+        }
+        return m_optBestReward;
+    });
+
+    if (!m_optimizationWatcher) {
+        m_optimizationWatcher = new QFutureWatcher<double>(this);
+        connect(m_optimizationWatcher, &QFutureWatcher<double>::finished, this, [this]() {
+            m_glWidget->updateMandibleFromSimulator(m_biteSimulator->mandible());
+            m_glWidget->update();
+            onOptimizationFinished();
+        });
+    }
+    m_optimizationWatcher->setFuture(future);
+
+    m_optTimer = new QTimer(this);
+    connect(m_optTimer, &QTimer::timeout, this, [this]() {
+        if (!m_optimizationRunning) {
+            m_optTimer->stop();
+            m_optTimer->deleteLater();
+            m_optTimer = nullptr;
+            return;
+        }
+        m_biteProgressBar->setValue(m_optStep * 100 / 30);
+        m_statusLabel->setText(tr("CEM [%1/30] Score: %2%").arg(m_optStep).arg((m_optBestReward + 1.0) / 2.0 * 100.0, 0, 'f', 1));
+    });
+    m_optTimer->start(50);
+}
+
+void MainWindow::runESOptimization()
+{
+}
+
+void MainWindow::savePolicyNetwork()
+{
+    if (!m_esOptimizer || !m_esOptimizer->policy()) {
+        QMessageBox::warning(this, tr("No Policy"), tr("Train ES first."));
+        return;
+    }
+
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Policy"), "", tr("Policy Files (*.policy)"));
+    if (path.isEmpty()) return;
+
+    if (m_esOptimizer->policy()->save(path.toStdString())) {
+        m_statusLabel->setText(tr("Policy saved to %1").arg(path));
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to save policy."));
+    }
+}
+
+void MainWindow::loadPolicyNetwork()
+{
+    QString path = QFileDialog::getOpenFileName(this, tr("Load Policy"), "", tr("Policy Files (*.policy)"));
+    if (path.isEmpty()) return;
+
+    if (!m_esOptimizer) {
+        ESOptimizer::Config config;
+        m_esOptimizer = std::make_unique<ESOptimizer>(m_biteSimulator.get(), config);
+    }
+
+    if (m_esOptimizer->policy()->load(path.toStdString())) {
+        m_statusLabel->setText(tr("Policy loaded from %1").arg(path));
+    } else {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to load policy."));
+    }
+}
+
+void MainWindow::runPPOOptimization()
+{
 }

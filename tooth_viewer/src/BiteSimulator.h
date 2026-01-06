@@ -6,6 +6,10 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <limits>
+#include <utility>
+#include <atomic>
+#include <functional>
 #include "Mesh.h"
 
 struct OrthodonticMetrics {
@@ -108,6 +112,10 @@ public:
     // Compute metrics
     OrthodonticMetrics computeMetrics() const;
     double computeReward(const OrthodonticMetrics& metrics) const;
+    
+    double computeFastReward() const;
+    void cacheSamplePoints();
+    double computeCachedReward() const;
 
     // Contact visualization - colors mandible vertices
     // Returns RGB colors for each mandible vertex
@@ -120,8 +128,65 @@ public:
     // ICP alignment
     void runICPAlignment(int iterations = 30);
 
-    // Simple gradient-based optimization
+    // Simple gradient-based optimization (legacy)
     void optimizeStep(double learningRate = 0.01);
+
+    // ========== Advanced Multi-Start Adam Optimization ==========
+
+    /**
+     * @brief Estimate gradient using central difference method
+     * More accurate than forward difference: g ≈ (f(x+h) - f(x-h)) / 2h
+     * @param eps Step size for finite difference
+     * @return 6-element gradient vector [rot_x, rot_y, rot_z, trans_x, trans_y, trans_z]
+     */
+    Eigen::Matrix<float, 6, 1> estimateGradient(float eps = 0.05f);
+
+    /**
+     * @brief Run one step of Adam optimization
+     * @param learningRate Adam learning rate (default: 0.01)
+     * @return Current reward after this step
+     */
+    double runAdamStep(float learningRate = 0.01f);
+
+    /**
+     * @brief Multi-start Adam optimization for occlusion
+     *
+     * Algorithm:
+     * 1. Run ICP for initial rough alignment
+     * 2. For each start (random perturbation from ICP result):
+     *    a. Reset to ICP-aligned position
+     *    b. Apply random perturbation
+     *    c. Run Adam optimization for N steps
+     *    d. Record best result
+     * 3. Restore to best position found
+     *
+     * @param numStarts Number of random restarts (default: 5)
+     * @param stepsPerStart Adam steps per start (default: 100)
+     * @param learningRate Adam learning rate (default: 0.01)
+     * @return Best reward achieved
+     */
+    double runAdamOptimization(int numStarts = 5, int stepsPerStart = 100, float learningRate = 0.01f,
+                               std::function<void(int, int, double)> progressCallback = nullptr);
+    
+    void cancelOptimization() { m_cancelRequested.store(true); }
+    bool isCancelled() const { return m_cancelRequested.load(); }
+    void resetCancellation() { m_cancelRequested.store(false); }
+
+    /**
+     * @brief Get current optimization state
+     * @return Pair of (currentReward, bestRewardFound)
+     */
+    std::pair<double, double> getOptimizationState() const {
+        return {m_currentReward, m_bestReward};
+    }
+
+    /**
+     * @brief Reset optimization state (clears best reward tracking)
+     */
+    void resetOptimizationState() {
+        m_currentReward = -std::numeric_limits<double>::max();
+        m_bestReward = -std::numeric_limits<double>::max();
+    }
 
     // Save optimized mandible
     bool saveMandible(const std::string& path) const;
@@ -150,10 +215,19 @@ private:
     // Pivot point for rotation (mandible centroid)
     Eigen::Vector3f m_pivotPoint = Eigen::Vector3f::Zero();
 
-    // Maxilla data for proximity queries
     std::vector<Eigen::Vector3f> m_maxillaVertices;
     std::vector<Eigen::Vector3f> m_maxillaNormals;
     SpatialHash m_spatialHash;
+    
+    mutable std::vector<size_t> m_cachedSampleIndices;
+    mutable std::vector<int> m_cachedNearestIndices;
+    mutable bool m_cacheValid = false;
+
+    // Optimization state tracking
+    double m_currentReward = -std::numeric_limits<double>::max();
+    double m_bestReward = -std::numeric_limits<double>::max();
+    
+    std::atomic<bool> m_cancelRequested{false};
 };
 
 #endif // BITESIMULATOR_H

@@ -37,60 +37,83 @@ std::unique_ptr<Mesh> MeshLoader::load(const std::string& filepath)
 
 std::unique_ptr<Mesh> MeshLoader::loadOBJ(const std::string& filepath)
 {
-    std::ifstream file(filepath);
+    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         std::cerr << "Failed to open: " << filepath << std::endl;
         return nullptr;
     }
 
+    size_t fileSize = file.tellg();
+    file.seekg(0);
+    
+    std::string content(fileSize, '\0');
+    file.read(&content[0], fileSize);
+    file.close();
+
     auto mesh = std::make_unique<Mesh>();
+    
+    size_t estimatedVerts = fileSize / 50;
     std::vector<Eigen::Vector3f> positions;
     std::vector<Eigen::Vector3f> colors;
-    std::string line;
+    positions.reserve(estimatedVerts);
+    colors.reserve(estimatedVerts);
 
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::string prefix;
-        iss >> prefix;
-
-        if (prefix == "v") {
-            float x, y, z;
-            iss >> x >> y >> z;
-
-            Eigen::Vector3f pos(x, y, z);
-            positions.push_back(pos);
-
-            // Check for vertex colors (non-standard OBJ: v x y z r g b)
-            float r, g, b;
-            if (iss >> r >> g >> b) {
-                colors.push_back(Eigen::Vector3f(r, g, b));
-            } else {
-                colors.push_back(Eigen::Vector3f(0.8f, 0.8f, 0.8f));
+    const char* ptr = content.data();
+    const char* end = ptr + content.size();
+    
+    while (ptr < end) {
+        while (ptr < end && (*ptr == ' ' || *ptr == '\t' || *ptr == '\r' || *ptr == '\n')) ptr++;
+        if (ptr >= end) break;
+        
+        if (*ptr == 'v' && (ptr[1] == ' ' || ptr[1] == '\t')) {
+            ptr += 2;
+            float x, y, z, r = 0.8f, g = 0.8f, b = 0.8f;
+            char* next;
+            x = strtof(ptr, &next); ptr = next;
+            y = strtof(ptr, &next); ptr = next;
+            z = strtof(ptr, &next); ptr = next;
+            
+            while (ptr < end && (*ptr == ' ' || *ptr == '\t')) ptr++;
+            if (ptr < end && *ptr != '\n' && *ptr != '\r' && *ptr != '#') {
+                r = strtof(ptr, &next); 
+                if (next != ptr) {
+                    ptr = next;
+                    g = strtof(ptr, &next); ptr = next;
+                    b = strtof(ptr, &next); ptr = next;
+                }
             }
+            
+            positions.emplace_back(x, y, z);
+            colors.emplace_back(r, g, b);
         }
-        else if (prefix == "f") {
-            std::vector<unsigned int> indices;
-            std::string vertexData;
-
-            while (iss >> vertexData) {
-                // Parse face vertex (format: v, v/vt, v/vt/vn, v//vn)
-                std::istringstream vss(vertexData);
-                std::string indexStr;
-                std::getline(vss, indexStr, '/');
-
-                int idx = std::stoi(indexStr);
-                // OBJ indices are 1-based
-                indices.push_back(idx > 0 ? idx - 1 : positions.size() + idx);
+        else if (*ptr == 'f' && (ptr[1] == ' ' || ptr[1] == '\t')) {
+            ptr += 2;
+            unsigned int indices[16];
+            int count = 0;
+            
+            while (ptr < end && *ptr != '\n' && *ptr != '\r' && count < 16) {
+                while (ptr < end && (*ptr == ' ' || *ptr == '\t')) ptr++;
+                if (ptr >= end || *ptr == '\n' || *ptr == '\r') break;
+                
+                char* next;
+                long idx = strtol(ptr, &next, 10);
+                if (next == ptr) break;
+                ptr = next;
+                
+                indices[count++] = (idx > 0) ? (idx - 1) : (positions.size() + idx);
+                
+                while (ptr < end && *ptr != ' ' && *ptr != '\t' && *ptr != '\n' && *ptr != '\r') ptr++;
             }
-
-            // Triangulate polygon (fan triangulation)
-            for (size_t i = 1; i + 1 < indices.size(); ++i) {
+            
+            for (int i = 1; i + 1 < count; ++i) {
                 mesh->addFace(indices[0], indices[i], indices[i + 1]);
             }
         }
+        
+        while (ptr < end && *ptr != '\n') ptr++;
+        if (ptr < end) ptr++;
     }
 
-    // Add vertices to mesh
     for (size_t i = 0; i < positions.size(); ++i) {
         mesh->addVertex(positions[i], Eigen::Vector3f::Zero(), colors[i]);
     }

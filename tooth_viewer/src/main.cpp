@@ -13,9 +13,9 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QApplication app(argc, argv);
-    app.setApplicationName("ToothViewer");
+    app.setApplicationName("Bite Finder");
     app.setApplicationVersion("1.0.0");
-    app.setOrganizationName("ToothViewer");
+    app.setOrganizationName("BiteFinder");
 
     MainWindow mainWindow;
     mainWindow.show();

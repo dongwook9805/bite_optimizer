@@ -1,5 +1,6 @@
 #include "BiteSimulator.h"
 #include "MeshLoader.h"
+#include "AdamOptimizer.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -584,28 +585,34 @@ void BiteSimulator::findClosestPoints(const std::vector<Eigen::Vector3f>& queryP
 std::vector<double> BiteSimulator::computeSignedDistances() const {
     if (!m_mandible || !m_maxilla) return {};
 
+    const int sampleStep = std::max(1, static_cast<int>(m_mandible->vertexCount() / 200));
+    const auto& allVerts = m_mandible->vertices();
+    
     std::vector<Eigen::Vector3f> mandibleVerts;
-    mandibleVerts.reserve(m_mandible->vertexCount());
-    for (const auto& v : m_mandible->vertices()) {
-        mandibleVerts.push_back(v.position);
+    std::vector<size_t> originalIndices;
+    mandibleVerts.reserve(allVerts.size() / sampleStep + 1);
+    originalIndices.reserve(allVerts.size() / sampleStep + 1);
+    
+    for (size_t i = 0; i < allVerts.size(); i += sampleStep) {
+        mandibleVerts.push_back(allVerts[i].position);
+        originalIndices.push_back(i);
     }
 
     std::vector<Eigen::Vector3f> closestPoints;
     std::vector<double> distances;
     findClosestPoints(mandibleVerts, closestPoints, distances);
 
-    std::vector<double> signedDistances(distances.size());
+    std::vector<double> signedDistances(allVerts.size(), std::numeric_limits<double>::max());
 
     #pragma omp parallel for
-    for (size_t i = 0; i < distances.size(); ++i) {
+    for (size_t i = 0; i < mandibleVerts.size(); ++i) {
         Eigen::Vector3f vec = mandibleVerts[i] - closestPoints[i];
 
-        // Get normal from spatial hash
         int nearestIdx = m_spatialHash.findNearest(closestPoints[i]);
         Eigen::Vector3f normal = (nearestIdx >= 0) ? m_maxillaNormals[nearestIdx] : Eigen::Vector3f::UnitZ();
 
         double sign = (vec.dot(normal) >= 0) ? 1.0 : -1.0;
-        signedDistances[i] = sign * distances[i];
+        signedDistances[originalIndices[i]] = sign * distances[i];
     }
 
     return signedDistances;
@@ -722,13 +729,13 @@ OrthodonticMetrics BiteSimulator::computeMetrics() const {
     // Divide into 4 quadrants: UL, UR, LL, LR (based on mesh position)
     double forceQuadrant[4] = {0, 0, 0, 0};  // LL, LR, UL, UR
 
-    for (size_t i = 0; i < signedDists.size(); ++i) {
+    const int sampleStep = std::max(1, static_cast<int>(mandibleVerts.size() / 200));
+    for (size_t i = 0; i < signedDists.size(); i += sampleStep) {
         double dist = signedDists[i];
+        if (dist > contactThreshold || dist == std::numeric_limits<double>::max()) continue;
+        
         const auto& pos = mandibleVerts[i].position;
         const auto& normal = mandibleVerts[i].normal;
-
-        // Skip if too far
-        if (dist > contactThreshold) continue;
 
         // Compute "force" based on penetration depth
         // Force is proportional to how much the teeth are pressing
@@ -836,6 +843,92 @@ OrthodonticMetrics BiteSimulator::computeMetrics() const {
     return metrics;
 }
 
+void BiteSimulator::cacheSamplePoints() {
+    if (!m_mandible || !m_maxilla) return;
+    
+    const auto& verts = m_mandible->vertices();
+    const int sampleStep = std::max(1, static_cast<int>(verts.size() / 50));
+    
+    m_cachedSampleIndices.clear();
+    m_cachedNearestIndices.clear();
+    
+    for (size_t i = 0; i < verts.size(); i += sampleStep) {
+        int nearestIdx = m_spatialHash.findNearest(verts[i].position);
+        if (nearestIdx >= 0) {
+            m_cachedSampleIndices.push_back(i);
+            m_cachedNearestIndices.push_back(nearestIdx);
+        }
+    }
+    m_cacheValid = true;
+}
+
+double BiteSimulator::computeCachedReward() const {
+    if (!m_cacheValid || m_cachedSampleIndices.empty()) return -1.0;
+    
+    const auto& verts = m_mandible->vertices();
+    double totalScore = 0;
+    int n = m_cachedSampleIndices.size();
+    
+    for (size_t i = 0; i < m_cachedSampleIndices.size(); ++i) {
+        const auto& pos = verts[m_cachedSampleIndices[i]].position;
+        int nearestIdx = m_cachedNearestIndices[i];
+        
+        Eigen::Vector3f diff = pos - m_maxillaVertices[nearestIdx];
+        float dist = diff.norm();
+        float signedDist = diff.dot(m_maxillaNormals[nearestIdx]) < 0 ? -dist : dist;
+        
+        double pointScore;
+        if (signedDist < -1.0f) {
+            pointScore = -1.0 - 0.5 * std::min(2.0f, std::abs(signedDist) - 1.0f);
+        } else if (signedDist < 0.0f) {
+            pointScore = -signedDist * signedDist;
+        } else if (signedDist < 0.3f) {
+            pointScore = 1.0 - (signedDist / 0.3) * (signedDist / 0.3);
+        } else if (signedDist < 2.0f) {
+            float t = (signedDist - 0.3f) / 1.7f;
+            pointScore = -t * t;
+        } else {
+            pointScore = -1.0;
+        }
+        totalScore += pointScore;
+    }
+    
+    return std::clamp(totalScore / n, -1.0, 1.0);
+}
+
+double BiteSimulator::computeFastReward() const {
+    if (m_cacheValid) return computeCachedReward();
+    
+    if (!m_mandible || !m_maxilla) return -1.0;
+    const auto& verts = m_mandible->vertices();
+    const int sampleStep = std::max(1, static_cast<int>(verts.size() / 50));
+    
+    double totalScore = 0;
+    int count = 0;
+    
+    for (size_t i = 0; i < verts.size(); i += sampleStep) {
+        const auto& pos = verts[i].position;
+        int nearestIdx = m_spatialHash.findNearest(pos);
+        if (nearestIdx < 0) continue;
+        
+        Eigen::Vector3f diff = pos - m_maxillaVertices[nearestIdx];
+        float dist = diff.norm();
+        float signedDist = diff.dot(m_maxillaNormals[nearestIdx]) < 0 ? -dist : dist;
+        
+        double pointScore;
+        if (signedDist < -1.0f) pointScore = -1.0 - 0.5 * std::min(2.0f, std::abs(signedDist) - 1.0f);
+        else if (signedDist < 0.0f) pointScore = -signedDist * signedDist;
+        else if (signedDist < 0.3f) pointScore = 1.0 - (signedDist / 0.3f) * (signedDist / 0.3f);
+        else if (signedDist < 2.0f) { float t = (signedDist - 0.3f) / 1.7f; pointScore = -t * t; }
+        else pointScore = -1.0;
+        
+        totalScore += pointScore;
+        count++;
+    }
+    
+    return count > 0 ? std::clamp(totalScore / count, -1.0, 1.0) : -1.0;
+}
+
 double BiteSimulator::computeReward(const OrthodonticMetrics& m) const {
     // =====================================================
     // 교정과 전문의 기준 교합 점수 (4대 원칙 기반)
@@ -909,30 +1002,35 @@ void BiteSimulator::runICPAlignment(int iterations) {
 
     std::cout << "Running ICP alignment (" << iterations << " iterations)..." << std::endl;
 
+    const int sampleStep = std::max(1, static_cast<int>(m_mandible->vertexCount() / 5000));
+    
     for (int iter = 0; iter < iterations; ++iter) {
-        std::vector<Eigen::Vector3f> mandibleVerts;
-        mandibleVerts.reserve(m_mandible->vertexCount());
-        for (const auto& v : m_mandible->vertices()) {
-            mandibleVerts.push_back(v.position);
+        std::vector<Eigen::Vector3f> sampledVerts;
+        std::vector<size_t> sampledIndices;
+        
+        const auto& allVerts = m_mandible->vertices();
+        for (size_t i = 0; i < allVerts.size(); i += sampleStep) {
+            sampledVerts.push_back(allVerts[i].position);
+            sampledIndices.push_back(i);
         }
 
         std::vector<Eigen::Vector3f> closestPoints;
         std::vector<double> distances;
-        findClosestPoints(mandibleVerts, closestPoints, distances);
+        findClosestPoints(sampledVerts, closestPoints, distances);
 
         Eigen::Vector3f srcCentroid = Eigen::Vector3f::Zero();
         Eigen::Vector3f dstCentroid = Eigen::Vector3f::Zero();
 
-        for (size_t i = 0; i < mandibleVerts.size(); ++i) {
-            srcCentroid += mandibleVerts[i];
+        for (size_t i = 0; i < sampledVerts.size(); ++i) {
+            srcCentroid += sampledVerts[i];
             dstCentroid += closestPoints[i];
         }
-        srcCentroid /= static_cast<float>(mandibleVerts.size());
+        srcCentroid /= static_cast<float>(sampledVerts.size());
         dstCentroid /= static_cast<float>(closestPoints.size());
 
         Eigen::Matrix3f H = Eigen::Matrix3f::Zero();
-        for (size_t i = 0; i < mandibleVerts.size(); ++i) {
-            Eigen::Vector3f srcP = mandibleVerts[i] - srcCentroid;
+        for (size_t i = 0; i < sampledVerts.size(); ++i) {
+            Eigen::Vector3f srcP = sampledVerts[i] - srcCentroid;
             Eigen::Vector3f dstP = closestPoints[i] - dstCentroid;
             H += srcP * dstP.transpose();
         }
@@ -1010,6 +1108,123 @@ void BiteSimulator::optimizeStep(double learningRate) {
     if (bestReward > currentReward) {
         applyTransform(bestDeltaR, bestDeltaT);
     }
+}
+
+// ========== Advanced Multi-Start Adam Optimization ==========
+
+Eigen::Matrix<float, 6, 1> BiteSimulator::estimateGradient(float eps) {
+    Eigen::Matrix<float, 6, 1> grad = Eigen::Matrix<float, 6, 1>::Zero();
+
+    if (!m_cacheValid) cacheSamplePoints();
+
+    for (int i = 0; i < 6; ++i) {
+        Eigen::Vector3f deltaR = Eigen::Vector3f::Zero();
+        Eigen::Vector3f deltaT = Eigen::Vector3f::Zero();
+
+        float e = (i < 3) ? eps : eps * 0.5f;
+        if (i < 3) deltaR[i] = e;
+        else deltaT[i - 3] = e;
+
+        applyTransform(deltaR, deltaT);
+        double rewardPlus = computeCachedReward();
+        applyTransform(-2.0f * deltaR, -2.0f * deltaT);
+        double rewardMinus = computeCachedReward();
+        applyTransform(deltaR, deltaT);
+        
+        grad[i] = static_cast<float>((rewardPlus - rewardMinus) / (2.0f * e));
+    }
+
+    m_currentReward = computeCachedReward();
+    return grad;
+}
+
+double BiteSimulator::runAdamStep(float learningRate) {
+    static AdamOptimizer optimizer;
+    static int stepCount = 0;
+    
+    if (stepCount == 0) optimizer.reset();
+    stepCount++;
+    if (stepCount > 200) stepCount = 0;
+    
+    Eigen::Matrix<float, 6, 1> grad = estimateGradient(0.1f);
+    
+    float gradNorm = grad.norm();
+    if (gradNorm > 1.0f) grad /= gradNorm;
+    
+    Eigen::Matrix<float, 6, 1> delta = optimizer.step(grad, learningRate);
+
+    Eigen::Vector3f deltaR(delta[0], delta[1], delta[2]);
+    Eigen::Vector3f deltaT(delta[3], delta[4], delta[5]);
+    applyTransform(deltaR, deltaT);
+
+    m_currentReward = computeCachedReward();
+    return m_currentReward;
+}
+
+double BiteSimulator::runAdamOptimization(int numStarts, int stepsPerStart, float learningRate,
+                                          std::function<void(int, int, double)> progressCallback) {
+    if (!m_mandible || !m_maxilla) {
+        return -std::numeric_limits<double>::max();
+    }
+
+    m_cancelRequested.store(false);
+
+    Eigen::Matrix4f initialTransform = m_transformMatrix;
+    m_currentReward = -std::numeric_limits<double>::max();
+    m_bestReward = -std::numeric_limits<double>::max();
+    Eigen::Matrix4f bestTransform = initialTransform;
+
+    int totalSteps = numStarts * stepsPerStart;
+    int currentStep = 0;
+
+    for (int start = 0; start < numStarts; ++start) {
+        if (m_cancelRequested.load()) break;
+
+        reset();
+        applyTransform(Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero());
+
+        float randRotX = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 1.0f;
+        float randRotY = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 1.0f;
+        float randRotZ = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 1.0f;
+        float randTransX = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2.0f;
+        float randTransY = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2.0f;
+        float randTransZ = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2.0f;
+
+        Eigen::Vector3f perturbationR(randRotX, randRotY, randRotZ);
+        Eigen::Vector3f perturbationT(randTransX, randTransY, randTransZ);
+        applyTransform(perturbationR, perturbationT);
+
+        AdamOptimizer adam;
+        for (int step = 0; step < stepsPerStart; ++step) {
+            if (m_cancelRequested.load()) break;
+
+            Eigen::Matrix<float, 6, 1> grad = estimateGradient(0.05f);
+            Eigen::Matrix<float, 6, 1> delta = adam.step(grad, learningRate);
+
+            Eigen::Vector3f deltaR(delta[0], delta[1], delta[2]);
+            Eigen::Vector3f deltaT(delta[3], delta[4], delta[5]);
+            applyTransform(deltaR, deltaT);
+
+            if (m_currentReward > m_bestReward) {
+                m_bestReward = m_currentReward;
+                bestTransform = m_transformMatrix;
+            }
+
+            currentStep++;
+            if (progressCallback) {
+                progressCallback(currentStep, totalSteps, m_bestReward);
+            }
+        }
+    }
+
+    if (!m_cancelRequested.load()) {
+        reset();
+        setMandibleTransform(bestTransform);
+        m_currentReward = computeReward(computeMetrics());
+        m_bestReward = m_currentReward;
+    }
+
+    return m_currentReward;
 }
 
 bool BiteSimulator::saveMandible(const std::string& path) const {

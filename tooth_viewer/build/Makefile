@@ -117,74 +117,98 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named ToothViewer
+# Target rules for targets named BiteFinder
 
 # Build rule for target.
-ToothViewer: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ToothViewer
-.PHONY : ToothViewer
+BiteFinder: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BiteFinder
+.PHONY : BiteFinder
 
 # fast build rule for target.
-ToothViewer/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/build
-.PHONY : ToothViewer/fast
+BiteFinder/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/build
+.PHONY : BiteFinder/fast
 
 #=============================================================================
-# Target rules for targets named ToothViewer_autogen_timestamp_deps
+# Target rules for targets named BiteFinder_autogen_timestamp_deps
 
 # Build rule for target.
-ToothViewer_autogen_timestamp_deps: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ToothViewer_autogen_timestamp_deps
-.PHONY : ToothViewer_autogen_timestamp_deps
+BiteFinder_autogen_timestamp_deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BiteFinder_autogen_timestamp_deps
+.PHONY : BiteFinder_autogen_timestamp_deps
 
 # fast build rule for target.
-ToothViewer_autogen_timestamp_deps/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build.make CMakeFiles/ToothViewer_autogen_timestamp_deps.dir/build
-.PHONY : ToothViewer_autogen_timestamp_deps/fast
+BiteFinder_autogen_timestamp_deps/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build.make CMakeFiles/BiteFinder_autogen_timestamp_deps.dir/build
+.PHONY : BiteFinder_autogen_timestamp_deps/fast
 
 #=============================================================================
-# Target rules for targets named ToothViewer_autogen
+# Target rules for targets named BiteFinder_autogen
 
 # Build rule for target.
-ToothViewer_autogen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ToothViewer_autogen
-.PHONY : ToothViewer_autogen
+BiteFinder_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BiteFinder_autogen
+.PHONY : BiteFinder_autogen
 
 # fast build rule for target.
-ToothViewer_autogen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer_autogen.dir/build.make CMakeFiles/ToothViewer_autogen.dir/build
-.PHONY : ToothViewer_autogen/fast
+BiteFinder_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder_autogen.dir/build.make CMakeFiles/BiteFinder_autogen.dir/build
+.PHONY : BiteFinder_autogen/fast
 
-ToothViewer_autogen/mocs_compilation.o: ToothViewer_autogen/mocs_compilation.cpp.o
-.PHONY : ToothViewer_autogen/mocs_compilation.o
+BiteFinder_autogen/mocs_compilation.o: BiteFinder_autogen/mocs_compilation.cpp.o
+.PHONY : BiteFinder_autogen/mocs_compilation.o
 
 # target to build an object file
-ToothViewer_autogen/mocs_compilation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.o
-.PHONY : ToothViewer_autogen/mocs_compilation.cpp.o
+BiteFinder_autogen/mocs_compilation.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/BiteFinder_autogen/mocs_compilation.cpp.o
+.PHONY : BiteFinder_autogen/mocs_compilation.cpp.o
 
-ToothViewer_autogen/mocs_compilation.i: ToothViewer_autogen/mocs_compilation.cpp.i
-.PHONY : ToothViewer_autogen/mocs_compilation.i
+BiteFinder_autogen/mocs_compilation.i: BiteFinder_autogen/mocs_compilation.cpp.i
+.PHONY : BiteFinder_autogen/mocs_compilation.i
 
 # target to preprocess a source file
-ToothViewer_autogen/mocs_compilation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.i
-.PHONY : ToothViewer_autogen/mocs_compilation.cpp.i
+BiteFinder_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/BiteFinder_autogen/mocs_compilation.cpp.i
+.PHONY : BiteFinder_autogen/mocs_compilation.cpp.i
 
-ToothViewer_autogen/mocs_compilation.s: ToothViewer_autogen/mocs_compilation.cpp.s
-.PHONY : ToothViewer_autogen/mocs_compilation.s
+BiteFinder_autogen/mocs_compilation.s: BiteFinder_autogen/mocs_compilation.cpp.s
+.PHONY : BiteFinder_autogen/mocs_compilation.s
 
 # target to generate assembly for a file
-ToothViewer_autogen/mocs_compilation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/ToothViewer_autogen/mocs_compilation.cpp.s
-.PHONY : ToothViewer_autogen/mocs_compilation.cpp.s
+BiteFinder_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/BiteFinder_autogen/mocs_compilation.cpp.s
+.PHONY : BiteFinder_autogen/mocs_compilation.cpp.s
+
+src/AdamOptimizer.o: src/AdamOptimizer.cpp.o
+.PHONY : src/AdamOptimizer.o
+
+# target to build an object file
+src/AdamOptimizer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/AdamOptimizer.cpp.o
+.PHONY : src/AdamOptimizer.cpp.o
+
+src/AdamOptimizer.i: src/AdamOptimizer.cpp.i
+.PHONY : src/AdamOptimizer.i
+
+# target to preprocess a source file
+src/AdamOptimizer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/AdamOptimizer.cpp.i
+.PHONY : src/AdamOptimizer.cpp.i
+
+src/AdamOptimizer.s: src/AdamOptimizer.cpp.s
+.PHONY : src/AdamOptimizer.s
+
+# target to generate assembly for a file
+src/AdamOptimizer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/AdamOptimizer.cpp.s
+.PHONY : src/AdamOptimizer.cpp.s
 
 src/BiteSimulator.o: src/BiteSimulator.cpp.o
 .PHONY : src/BiteSimulator.o
 
 # target to build an object file
 src/BiteSimulator.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/BiteSimulator.cpp.o
 .PHONY : src/BiteSimulator.cpp.o
 
 src/BiteSimulator.i: src/BiteSimulator.cpp.i
@@ -192,7 +216,7 @@ src/BiteSimulator.i: src/BiteSimulator.cpp.i
 
 # target to preprocess a source file
 src/BiteSimulator.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/BiteSimulator.cpp.i
 .PHONY : src/BiteSimulator.cpp.i
 
 src/BiteSimulator.s: src/BiteSimulator.cpp.s
@@ -200,7 +224,7 @@ src/BiteSimulator.s: src/BiteSimulator.cpp.s
 
 # target to generate assembly for a file
 src/BiteSimulator.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/BiteSimulator.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/BiteSimulator.cpp.s
 .PHONY : src/BiteSimulator.cpp.s
 
 src/GLWidget.o: src/GLWidget.cpp.o
@@ -208,7 +232,7 @@ src/GLWidget.o: src/GLWidget.cpp.o
 
 # target to build an object file
 src/GLWidget.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/GLWidget.cpp.o
 .PHONY : src/GLWidget.cpp.o
 
 src/GLWidget.i: src/GLWidget.cpp.i
@@ -216,7 +240,7 @@ src/GLWidget.i: src/GLWidget.cpp.i
 
 # target to preprocess a source file
 src/GLWidget.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/GLWidget.cpp.i
 .PHONY : src/GLWidget.cpp.i
 
 src/GLWidget.s: src/GLWidget.cpp.s
@@ -224,7 +248,7 @@ src/GLWidget.s: src/GLWidget.cpp.s
 
 # target to generate assembly for a file
 src/GLWidget.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/GLWidget.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/GLWidget.cpp.s
 .PHONY : src/GLWidget.cpp.s
 
 src/MainWindow.o: src/MainWindow.cpp.o
@@ -232,7 +256,7 @@ src/MainWindow.o: src/MainWindow.cpp.o
 
 # target to build an object file
 src/MainWindow.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MainWindow.cpp.o
 .PHONY : src/MainWindow.cpp.o
 
 src/MainWindow.i: src/MainWindow.cpp.i
@@ -240,7 +264,7 @@ src/MainWindow.i: src/MainWindow.cpp.i
 
 # target to preprocess a source file
 src/MainWindow.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MainWindow.cpp.i
 .PHONY : src/MainWindow.cpp.i
 
 src/MainWindow.s: src/MainWindow.cpp.s
@@ -248,7 +272,7 @@ src/MainWindow.s: src/MainWindow.cpp.s
 
 # target to generate assembly for a file
 src/MainWindow.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MainWindow.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MainWindow.cpp.s
 .PHONY : src/MainWindow.cpp.s
 
 src/Mesh.o: src/Mesh.cpp.o
@@ -256,7 +280,7 @@ src/Mesh.o: src/Mesh.cpp.o
 
 # target to build an object file
 src/Mesh.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Mesh.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Mesh.cpp.o
 .PHONY : src/Mesh.cpp.o
 
 src/Mesh.i: src/Mesh.cpp.i
@@ -264,7 +288,7 @@ src/Mesh.i: src/Mesh.cpp.i
 
 # target to preprocess a source file
 src/Mesh.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Mesh.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Mesh.cpp.i
 .PHONY : src/Mesh.cpp.i
 
 src/Mesh.s: src/Mesh.cpp.s
@@ -272,7 +296,7 @@ src/Mesh.s: src/Mesh.cpp.s
 
 # target to generate assembly for a file
 src/Mesh.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Mesh.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Mesh.cpp.s
 .PHONY : src/Mesh.cpp.s
 
 src/MeshLoader.o: src/MeshLoader.cpp.o
@@ -280,7 +304,7 @@ src/MeshLoader.o: src/MeshLoader.cpp.o
 
 # target to build an object file
 src/MeshLoader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MeshLoader.cpp.o
 .PHONY : src/MeshLoader.cpp.o
 
 src/MeshLoader.i: src/MeshLoader.cpp.i
@@ -288,7 +312,7 @@ src/MeshLoader.i: src/MeshLoader.cpp.i
 
 # target to preprocess a source file
 src/MeshLoader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MeshLoader.cpp.i
 .PHONY : src/MeshLoader.cpp.i
 
 src/MeshLoader.s: src/MeshLoader.cpp.s
@@ -296,15 +320,63 @@ src/MeshLoader.s: src/MeshLoader.cpp.s
 
 # target to generate assembly for a file
 src/MeshLoader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/MeshLoader.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/MeshLoader.cpp.s
 .PHONY : src/MeshLoader.cpp.s
+
+src/Optimizer.o: src/Optimizer.cpp.o
+.PHONY : src/Optimizer.o
+
+# target to build an object file
+src/Optimizer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Optimizer.cpp.o
+.PHONY : src/Optimizer.cpp.o
+
+src/Optimizer.i: src/Optimizer.cpp.i
+.PHONY : src/Optimizer.i
+
+# target to preprocess a source file
+src/Optimizer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Optimizer.cpp.i
+.PHONY : src/Optimizer.cpp.i
+
+src/Optimizer.s: src/Optimizer.cpp.s
+.PHONY : src/Optimizer.s
+
+# target to generate assembly for a file
+src/Optimizer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Optimizer.cpp.s
+.PHONY : src/Optimizer.cpp.s
+
+src/RLOptimizer.o: src/RLOptimizer.cpp.o
+.PHONY : src/RLOptimizer.o
+
+# target to build an object file
+src/RLOptimizer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/RLOptimizer.cpp.o
+.PHONY : src/RLOptimizer.cpp.o
+
+src/RLOptimizer.i: src/RLOptimizer.cpp.i
+.PHONY : src/RLOptimizer.i
+
+# target to preprocess a source file
+src/RLOptimizer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/RLOptimizer.cpp.i
+.PHONY : src/RLOptimizer.cpp.i
+
+src/RLOptimizer.s: src/RLOptimizer.cpp.s
+.PHONY : src/RLOptimizer.s
+
+# target to generate assembly for a file
+src/RLOptimizer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/RLOptimizer.cpp.s
+.PHONY : src/RLOptimizer.cpp.s
 
 src/Segmentation.o: src/Segmentation.cpp.o
 .PHONY : src/Segmentation.o
 
 # target to build an object file
 src/Segmentation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Segmentation.cpp.o
 .PHONY : src/Segmentation.cpp.o
 
 src/Segmentation.i: src/Segmentation.cpp.i
@@ -312,7 +384,7 @@ src/Segmentation.i: src/Segmentation.cpp.i
 
 # target to preprocess a source file
 src/Segmentation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Segmentation.cpp.i
 .PHONY : src/Segmentation.cpp.i
 
 src/Segmentation.s: src/Segmentation.cpp.s
@@ -320,7 +392,7 @@ src/Segmentation.s: src/Segmentation.cpp.s
 
 # target to generate assembly for a file
 src/Segmentation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/Segmentation.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/Segmentation.cpp.s
 .PHONY : src/Segmentation.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -328,7 +400,7 @@ src/main.o: src/main.cpp.o
 
 # target to build an object file
 src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
 src/main.i: src/main.cpp.i
@@ -336,7 +408,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -344,7 +416,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ToothViewer.dir/build.make CMakeFiles/ToothViewer.dir/src/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BiteFinder.dir/build.make CMakeFiles/BiteFinder.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 # Help Target
@@ -355,12 +427,15 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... ToothViewer_autogen"
-	@echo "... ToothViewer_autogen_timestamp_deps"
-	@echo "... ToothViewer"
-	@echo "... ToothViewer_autogen/mocs_compilation.o"
-	@echo "... ToothViewer_autogen/mocs_compilation.i"
-	@echo "... ToothViewer_autogen/mocs_compilation.s"
+	@echo "... BiteFinder_autogen"
+	@echo "... BiteFinder_autogen_timestamp_deps"
+	@echo "... BiteFinder"
+	@echo "... BiteFinder_autogen/mocs_compilation.o"
+	@echo "... BiteFinder_autogen/mocs_compilation.i"
+	@echo "... BiteFinder_autogen/mocs_compilation.s"
+	@echo "... src/AdamOptimizer.o"
+	@echo "... src/AdamOptimizer.i"
+	@echo "... src/AdamOptimizer.s"
 	@echo "... src/BiteSimulator.o"
 	@echo "... src/BiteSimulator.i"
 	@echo "... src/BiteSimulator.s"
@@ -376,6 +451,12 @@ help:
 	@echo "... src/MeshLoader.o"
 	@echo "... src/MeshLoader.i"
 	@echo "... src/MeshLoader.s"
+	@echo "... src/Optimizer.o"
+	@echo "... src/Optimizer.i"
+	@echo "... src/Optimizer.s"
+	@echo "... src/RLOptimizer.o"
+	@echo "... src/RLOptimizer.i"
+	@echo "... src/RLOptimizer.s"
 	@echo "... src/Segmentation.o"
 	@echo "... src/Segmentation.i"
 	@echo "... src/Segmentation.s"
